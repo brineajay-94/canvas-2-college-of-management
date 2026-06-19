@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Management - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Admin Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="users.html" class="sidebar-link"><i class="fas fa-users"></i> Users</a>
+      <a href="team.html" class="sidebar-link"><i class="fas fa-user-friends"></i> Team</a>
+      <a href="slider.html" class="sidebar-link"><i class="fas fa-images"></i> Slider</a>
+      <a href="sheet.html" class="sidebar-link"><i class="fas fa-file-alt"></i> Sheet</a>
+      <span class="sidebar-nav-label">Results</span>
+      <a href="view-result.html" class="sidebar-link"><i class="fas fa-file-invoice"></i> View Result</a>
+      <a href="results.html" class="sidebar-link"><i class="fas fa-cog"></i> Manage Sheets</a>
+    </nav>
+    <a href="../index.html" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Visit Website</a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h1>Role Management</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Users</span>
+          <div class="panel-actions">
+            <button class="btn btn-primary" onclick="openAddRoleModal()"><i class="fas fa-plus"></i> Add Teacher</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Assigned Subjects</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rolesTableBody">
+                <tr><td colspan="5"><div class="empty-state"><h3>Loading users...</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="roleModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="roleModalTitle">Add Teacher</span>
+        <button class="modal-close" onclick="closeModal('roleModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="roleForm">
+          <div class="form-group">
+            <label for="roleName">Full Name</label>
+            <input type="text" id="roleName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="roleEmail">Email</label>
+            <input type="email" id="roleEmail" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="rolePassword">Password</label>
+            <input type="password" id="rolePassword" class="form-control" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label for="roleRole">Role</label>
+            <select id="roleRole" class="form-control">
+              <option value="teacher">Teacher</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned Subjects</label>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="assignProgram">Class</label>
+                <select id="assignProgram" class="form-control">
+                  <option value="">-- Select Class --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="assignSubject">Subject</label>
+                <select id="assignSubject" class="form-control"><option value="">-- Select class first --</option></select>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addAssignment()" style="margin-top:8px;"><i class="fas fa-plus"></i> Add Subject</button>
+            <div id="assignmentList" style="margin-top:10px;"></div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('roleModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/subject-utils.js"></script>
+  <script src="../assets/js/admin/admin.js"></script>
+  <script src="../assets/js/admin/roles.js"></script>
+</body>
+</html>

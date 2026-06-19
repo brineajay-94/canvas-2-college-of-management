@@ -1,0 +1,487 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas+2 College of Management - Home</title>
+  <meta name="description" content="Canvas+2 College of Management is a leading educational institution in Triyuga, Gaighat, Udayapur, Nepal offering Plus Two Management, Science, BBA, and BBS programs with academic excellence.">
+  <meta name="keywords" content="Canvas+2 College, Canvas+2 College of Management, Plus Two College Udayapur, Higher Secondary Nepal, BBA RJU, BBS TU, Gaighat College, Triyuga Education, NEB Management, Best College Udayapur">
+  <meta name="author" content="Canvas+2 College of Management">
+  <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <meta name="revisit-after" content="7 days">
+  <meta name="language" content="English">
+  <meta name="geo.region" content="NP-P1">
+  <meta name="geo.placename" content="Triyuga, Udayapur, Nepal">
+  <meta name="geo.position" content="26.775;87.165">
+  <meta name="ICBM" content="26.775, 87.165">
+  <link rel="canonical" href="https://canvasplus2.edu.np/">
+  <meta property="og:title" content="Canvas+2 College of Management - Top Higher Secondary College in Udayapur, Nepal">
+  <meta property="og:description" content="Canvas+2 College of Management offers Plus Two (Management & Science), BBA, and BBS programs. Located in Triyuga-11, Gaighat, Udayapur, Nepal.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://canvasplus2.edu.np/">
+  <meta property="og:image" content="https://canvasplus2.edu.np/assets/images/logo.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:site_name" content="Canvas+2 College of Management">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Canvas+2 College of Management - Top Higher Secondary College in Udayapur">
+  <meta name="twitter:description" content="Offering Plus Two (Management & Science), BBA, and BBS programs in Triyuga, Gaighat, Udayapur, Nepal.">
+  <meta name="twitter:image" content="https://canvasplus2.edu.np/assets/images/logo.png">
+  <meta name="theme-color" content="#1a3c6d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Canvas+2 College">
+  <meta name="msapplication-TileColor" content="#1a3c6d">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "Canvas+2 College of Management",
+    "alternateName": "Canvas+2 College",
+    "url": "https://canvasplus2.edu.np/",
+    "logo": "https://canvasplus2.edu.np/assets/images/logo.png",
+    "description": "Leading higher secondary college offering Plus Two Management, Science, BBA, and BBS programs in Triyuga, Gaighat, Udayapur, Nepal.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Triyuga-11, Gaighat",
+      "addressLocality": "Udayapur",
+      "addressRegion": "Province 1",
+      "addressCountry": "NP"
+    },
+    "telephone": "+977-9851321240",
+    "email": "info@canvasplus2.edu.np",
+    "foundingDate": "2018",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "bestRating": "5",
+      "ratingCount": "120"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <span><i class="fas fa-map-marker-alt"></i> Triyuga-11, Gaighat, Udayapur, Nepal</span>
+      <div class="contact-mini">
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:9851321240">9851321240</a></span>
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:035590558">035590558</a></span>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <img src="assets/images/logo.png" alt="Canvas+2 College of Management" class="logo-img" onerror="this.style.display='none'">
+        <div class="logo-text">
+          <h1>Canvas+2 College of Management</h1>
+          <p class="tagline">Excellence in Education</p>
+        </div>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="#faculties">Faculties</a></li>
+          <li><a href="#team">Team</a></li>
+          <li><a href="result.html">Result</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+      </div>
+    </div>
+  </header>
+
+  <section class="slider-section" aria-label="College Image Slider">
+    <div class="slider-wrapper" id="sliderWrapper">
+      <div class="slider-track" id="sliderTrack"></div>
+      <button class="slider-btn prev" id="prevBtn" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+      <button class="slider-btn next" id="nextBtn" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+      <div class="slider-dots" id="sliderDots"></div>
+    </div>
+  </section>
+
+  <section class="about-section section" id="about-section">
+    <span class="section-label">About Us</span>
+    <h2 class="section-title">Welcome to Canvas+2 College of Management</h2>
+    <p class="section-desc">
+      Canvas+2 College of Management is a leading educational institution dedicated to academic excellence, innovation and student success. We provide a nurturing environment that fosters intellectual growth, critical thinking, and personal development. Our experienced faculty and modern facilities ensure that every student receives the highest quality education.
+    </p>
+    <div class="highlights-row">
+      <div class="highlight-card">
+        <i class="fas fa-graduation-cap"></i>
+        <h4>Plus Two</h4>
+        <p>Management & Science</p>
+      </div>
+      <div class="highlight-card">
+        <i class="fas fa-chart-bar"></i>
+        <h4>BBA Program</h4>
+        <p>Rajarshi Janaki University</p>
+      </div>
+      <div class="highlight-card">
+        <i class="fas fa-calculator"></i>
+        <h4>BBS Program</h4>
+        <p>Tribhuvan University</p>
+      </div>
+      <div class="highlight-card">
+        <i class="fas fa-building"></i>
+        <h4>Modern Campus</h4>
+        <p>Well-equipped facilities</p>
+      </div>
+      <div class="highlight-card">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <h4>Expert Faculty</h4>
+        <p>Experienced educators</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faculties">
+    <span class="section-label">Our Programs</span>
+    <h2 class="section-title">Faculties at Canvas +2</h2>
+    <p class="section-desc">Comprehensive academic programs designed for your success.</p>
+    <div class="cards-grid" id="facultiesGrid">
+      <article class="faculty-card">
+        <div class="faculty-card-header">
+          <i class="fas fa-briefcase"></i>
+          <h3>Plus Two (Management)</h3>
+          <span class="badge">NEB</span>
+        </div>
+        <div class="faculty-card-body">
+          <p>Comprehensive management education for classes 11 and 12.</p>
+          <ul class="faculty-features">
+            <li>English, Nepali, Accountancy</li>
+            <li>Math/Social, Business Math</li>
+            <li>Hotel Management, Computer Science</li>
+          </ul>
+        </div>
+      </article>
+      <article class="faculty-card">
+        <div class="faculty-card-header">
+          <i class="fas fa-flask"></i>
+          <h3>Plus Two (Science)</h3>
+          <span class="badge">NEB</span>
+        </div>
+        <div class="faculty-card-body">
+          <p>Rigorous science program preparing students for medical and engineering careers.</p>
+          <ul class="faculty-features">
+            <li>English, Nepali, Physics, Chemistry</li>
+            <li>Biology or Computer Science</li>
+            <li>Mathematics</li>
+          </ul>
+        </div>
+      </article>
+      <article class="faculty-card">
+        <div class="faculty-card-header">
+          <i class="fas fa-chart-line"></i>
+          <h3>BBA</h3>
+          <span class="badge">RJU</span>
+        </div>
+        <div class="faculty-card-body">
+          <p>Bachelor of Business Administration â€” practical learning with modern curriculum.</p>
+          <ul class="faculty-features">
+            <li>Marketing, Finance, HR</li>
+            <li>Business Law</li>
+            <li>Project-based learning</li>
+          </ul>
+        </div>
+      </article>
+      <article class="faculty-card">
+        <div class="faculty-card-header">
+          <i class="fas fa-university"></i>
+          <h3>BBS</h3>
+          <span class="badge">TU</span>
+        </div>
+        <div class="faculty-card-body">
+          <p>Bachelor of Business Studies â€” theory focused with traditional curriculum.</p>
+          <ul class="faculty-features">
+            <li>Economics, Auditing, Taxation</li>
+            <li>Business Statistics</li>
+            <li>Exam focused approach</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="team">
+    <span class="section-label">Our Team</span>
+    <h2 class="section-title">Meet Our Team</h2>
+    <p class="section-desc">Our dedicated team of educators and staff committed to your success.</p>
+    <div class="team-grid" id="teamGrid">
+      <p style="text-align:center;grid-column:1/-1;color:var(--text-light);">Loading team members...</p>
+    </div>
+  </section>
+
+  <div class="section" id="contact">
+    <div class="contact-apply-grid">
+      <address class="contact-card">
+        <h3><i class="fas fa-headset"></i> Get in Touch</h3>
+        <p class="subtitle">Reach out to our administration for any queries</p>
+        <div class="contact-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span><strong>Address:</strong> <span id="cAddress">Triyuga-11, Gaighat, Udayapur, Nepal</span></span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <span><strong>Phone:</strong> <a href="tel:9851321240" id="cPhone">9851321240</a></span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <span><strong>Phone:</strong> <a href="tel:035590558">035590558</a></span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-university"></i>
+          <span><strong>College:</strong> Takshashila College</span>
+        </div>
+      </address>
+      <div class="apply-card">
+        <h3><i class="fas fa-search"></i> Check Your Result</h3>
+        <p>View your academic results online. Enter your symbol number and find your performance details.</p>
+        <a href="result.html" class="btn btn-primary btn-lg">
+          <i class="fas fa-file-alt"></i> Search Result
+        </a>
+        <p class="deadline-note" style="position:relative;z-index:1;font-size:0.85rem;opacity:0.8;">
+          <span class="pulse-dot"></span> Published results available now
+        </p>
+      </div>
+    </div>
+    <div class="map-container" id="mapContainer" style="margin-top:30px;">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3561.4818474447657!2d86.69859947521999!3d26.792781976718842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eec36d5434bd53%3A0x6057bc7cb4d6d7e7!2sCanvas%20%2B2%20College%20of%20Science%2CLaw%26Management!5e0!3m2!1sen!2snp!4v1781843614724!5m2!1sen!2snp" allowfullscreen="" loading="lazy" title="Canvas +2 College Location"></iframe>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> <strong>Canvas+2 College of Management</strong>. All rights reserved.</p>
+  </footer>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    const SLIDER_DATA = [];
+
+    let slideInterval;
+    let currentIndex = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initSlider();
+      loadSliderFromFirestore();
+      loadTeam();
+      loadContactInfo();
+      await authService.init();
+      if (authService.isAdmin() || authService.isTeacher()) {
+        var navUl = document.querySelector('nav ul');
+        if (authService.isAdmin() && !navUl.querySelector('.admin-nav-item')) {
+          var li = document.createElement('li');
+          li.className = 'admin-nav-item';
+          var a = document.createElement('a');
+          a.href = 'admin/index.html';
+          a.innerHTML = '<i class="fas fa-shield-alt" style="font-size:0.8rem;"></i> Admin';
+          a.style.cssText = 'background:var(--primary);color:#fff!important;border-radius:50px;padding:6px 16px!important;font-size:0.82rem!important;';
+          a.onmouseenter = function(){this.style.background='var(--primary-light)'};
+          a.onmouseleave = function(){this.style.background='var(--primary)'};
+          li.appendChild(a);
+          navUl.appendChild(li);
+        }
+        if (authService.isTeacher() && !navUl.querySelector('.teacher-nav-item')) {
+          var li = document.createElement('li');
+          li.className = 'teacher-nav-item';
+          var a = document.createElement('a');
+          a.href = 'teacher/index.html';
+          a.innerHTML = '<i class="fas fa-chalkboard-teacher" style="font-size:0.8rem;"></i> Teacher';
+          a.style.cssText = 'background:#2da44e;color:#fff!important;border-radius:50px;padding:6px 16px!important;font-size:0.82rem!important;';
+          a.onmouseenter = function(){this.style.background='#238636'};
+          a.onmouseleave = function(){this.style.background='#2da44e'};
+          li.appendChild(a);
+          navUl.appendChild(li);
+        }
+      }
+      initNavToggle();
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    });
+
+    function initNavToggle() {
+      document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+        document.querySelector('nav ul').classList.toggle('open');
+      });
+      document.querySelectorAll('nav ul li a').forEach(link => {
+        link.addEventListener('click', () => {
+          document.querySelector('nav ul')?.classList.remove('open');
+        });
+      });
+    }
+
+    function initSlider() {
+      if (SLIDER_DATA.length) buildSlides(SLIDER_DATA);
+    }
+
+    function buildSlides(slides) {
+      if (!slides.length) { document.querySelector('.slider-section').style.display = 'none'; return; }
+      const track = document.getElementById('sliderTrack');
+      const dots = document.getElementById('sliderDots');
+
+      track.innerHTML = slides.map((s, i) => `
+        <div class="slide">
+          <div class="slide-skeleton" id="skel-${i}"></div>
+          <img src="${s.url}" alt="${s.title}" id="slide-img-${i}"
+               fetchpriority="${i === 0 ? 'high' : 'low'}"
+               onload="onImgLoad(${i})"
+               onerror="onImgError(${i})">
+          <div class="slide-overlay">
+            <h2>${s.title}</h2>
+            <p>${s.description}</p>
+          </div>
+        </div>
+      `).join('');
+
+      dots.innerHTML = slides.map((_, i) => `
+        <span class="slider-dot${i === 0 ? ' active' : ''}" data-index="${i}"></span>
+      `).join('');
+
+      document.querySelectorAll('.slider-dot').forEach(dot => {
+        dot.addEventListener('click', () => goToSlide(parseInt(dot.dataset.index)));
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
+      document.getElementById('nextBtn').addEventListener('click', () => { nextSlide(); resetAutoPlay(); });
+
+      let touchStartX = 0;
+      document.getElementById('sliderWrapper').addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      document.getElementById('sliderWrapper').addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) {
+          diff > 0 ? nextSlide() : prevSlide();
+          resetAutoPlay();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') { prevSlide(); resetAutoPlay(); }
+        else if (e.key === 'ArrowRight') { nextSlide(); resetAutoPlay(); }
+      });
+
+      goToSlide(0);
+      startAutoPlay();
+    }
+
+    function onImgLoad(index) {
+      const img = document.getElementById(`slide-img-${index}`);
+      const skel = document.getElementById(`skel-${index}`);
+      if (img) img.classList.add('loaded');
+      if (skel) skel.classList.add('hide');
+    }
+
+    function onImgError(index) {
+      const skel = document.getElementById(`skel-${index}`);
+      if (skel) skel.classList.add('hide');
+    }
+
+    function goToSlide(index) {
+      const total = SLIDER_DATA.length;
+      if (index < 0) index = total - 1;
+      if (index >= total) index = 0;
+      currentIndex = index;
+      const track = document.getElementById('sliderTrack');
+      if (track) track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      document.querySelectorAll('.slider-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    function nextSlide() { goToSlide(currentIndex + 1); }
+    function prevSlide() { goToSlide(currentIndex - 1); }
+    function startAutoPlay() { slideInterval = setInterval(nextSlide, 4500); }
+    function resetAutoPlay() { clearInterval(slideInterval); startAutoPlay(); }
+
+    async function loadSliderFromFirestore() {
+      try {
+        const doc = await db.collection('settings').doc('general').get();
+        if (!doc.exists) { document.querySelector('.slider-section').style.display = 'none'; return; }
+        const s = doc.data();
+        const urls = s.sliderImages || [];
+        if (urls.length < 1) { document.querySelector('.slider-section').style.display = 'none'; return; }
+        const slides = urls.map((url, i) => ({
+          url,
+          title: s.sliderTitles?.[i] || s.sliderDescriptions?.[i] ? (s.sliderTitles?.[i] || '') : `Slide ${i + 1}`,
+          description: s.sliderDescriptions?.[i] || ''
+        }));
+        SLIDER_DATA.length = 0;
+        SLIDER_DATA.push(...slides);
+        buildSlides(SLIDER_DATA);
+      } catch(e) {}
+    }
+
+    async function loadTeam() {
+      const grid = document.getElementById('teamGrid');
+      try {
+        const snap = await db.collection('staff').orderBy('order').get();
+        if (snap.empty) {
+          grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--text-light);">No team members added yet.</p>';
+          return;
+        }
+        const members = [];
+        snap.forEach(doc => members.push(doc.data()));
+        const order = { Principal: 1, Founder: 2, Teacher: 3, Accountant: 4, Staff: 5, Admin: 6 };
+        members.sort((a, b) => {
+          const ap = a.positions?.length ? Math.min(...a.positions.map(p => order[p] || 99)) : 99;
+          const bp = b.positions?.length ? Math.min(...b.positions.map(p => order[p] || 99)) : 99;
+          return ap - bp;
+        });
+        grid.innerHTML = members.map(m => `
+          <div class="team-card">
+            <img src="${m.imageUrl || 'https://via.placeholder.com/110'}" alt="${m.fullName}" class="profile-img" loading="lazy" onerror="this.src='https://via.placeholder.com/110'">
+            <h3>${m.fullName}</h3>
+            <div class="position">${(m.positions || []).join(', ')}</div>
+            ${m.subject ? `<div class="subject">${m.subject}</div>` : ''}
+            ${m.contact ? `<div class="contact">${m.contact}</div>` : ''}
+          </div>
+        `).join('');
+      } catch(e) {
+        grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--text-light);">Unable to load team members.</p>';
+      }
+    }
+
+    async function loadContactInfo() {
+      try {
+        const doc = await db.collection('settings').doc('general').get();
+        if (!doc.exists) return;
+        const s = doc.data();
+        if (s.address) {
+          document.getElementById('cAddress').textContent = s.address;
+          document.querySelector('.top-bar-inner span').innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + s.address;
+        }
+        if (s.phone) {
+          document.getElementById('cPhone').textContent = s.phone;
+          document.getElementById('cPhone').href = 'tel:' + s.phone;
+        }
+        if (s.phone2) {
+          const p2 = document.querySelector('#contact .contact-item:nth-child(4) a');
+          if (p2) { p2.textContent = s.phone2; p2.href = 'tel:' + s.phone2; }
+        }
+        const mini = document.querySelector('.contact-mini');
+        mini.innerHTML = '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone || '9851321240') + '">' + (s.phone || '9851321240') + '</a></span>' + '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone2 || '035590558') + '">' + (s.phone2 || '035590558') + '</a></span>';
+        if (s.mapEmbedUrl) {
+          document.getElementById('mapContainer').innerHTML = '<iframe src="' + s.mapEmbedUrl + '" allowfullscreen="" loading="lazy" title="College Location"></iframe>';
+        }
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>

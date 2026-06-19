@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result - Canvas+2 College of Management</title>
+  <meta name="description" content="Search and view your academic results online at Canvas+2 College of Management. Enter your symbol number to access your grade sheet instantly.">
+  <meta name="keywords" content="Canvas+2 College result, Plus Two result Nepal, Grade sheet Canvas+2, NEB result 2026, Canvas+2 College of Management result, Udayapur exam result, Gaighat college result">
+  <meta name="author" content="Canvas+2 College of Management">
+  <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow, max-snippet:-1">
+  <meta name="revisit-after" content="3 days">
+  <meta name="language" content="English">
+  <meta name="geo.region" content="NP-P1">
+  <meta name="geo.placename" content="Triyuga, Udayapur, Nepal">
+  <meta name="geo.position" content="26.775;87.165">
+  <link rel="canonical" href="https://canvasplus2.edu.np/result.html">
+  <meta property="og:title" content="Result - Canvas+2 College of Management | Check Your Grade Sheet">
+  <meta property="og:description" content="Search and view your academic results online at Canvas+2 College of Management. Enter your symbol number to access your grade sheet.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://canvasplus2.edu.np/result.html">
+  <meta property="og:image" content="https://canvasplus2.edu.np/assets/images/logo.png">
+  <meta property="og:site_name" content="Canvas+2 College of Management">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Result - Canvas+2 College of Management">
+  <meta name="twitter:description" content="Search and view your academic results at Canvas+2 College of Management.">
+  <meta name="theme-color" content="#1a3c6d">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <style>
+    .print-signature { display: none; }
+    @media print {
+      @page { size: A4; margin: 0; }
+      body > *:not(.section) { display: none !important; }
+      .section > *:not(#resultDisplay) { display: none !important; }
+      #resultDisplay { display: block !important; }
+      #resultDisplay > div:last-child { display: none !important; }
+      #resultDisplay > div:first-child { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+      .print-signature { display: flex !important; break-inside: avoid; }
+      .section { padding: 10px !important; margin: 0 !important; max-width: 100% !important; }
+      body { background: #fff !important; }
+      table { font-size: 0.8rem !important; }
+      th, td { padding: 6px 4px !important; }
+      #resultDisplay > div:first-child > div:first-child { padding: 16px 16px 10px !important; }
+      #resultDisplay > div:first-child > div:first-child h3 { font-size: 1.1rem !important; }
+      #resultDisplay > div:first-child > div:first-child p { font-size: 0.95rem !important; }
+      .print-signature { padding: 12px 20px !important; }
+      .print-signature div div:first-child { width: 140px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <span><i class="fas fa-map-marker-alt"></i> Triyuga-11, Gaighat, Udayapur, Nepal</span>
+      <div class="contact-mini">
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:9851321240">9851321240</a></span>
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:035590558">035590558</a></span>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <img src="assets/images/logo.png" alt="Canvas+2 College of Management" class="logo-img" onerror="this.style.display='none'">
+        <div class="logo-text">
+          <h1>Canvas+2 College of Management</h1>
+          <p class="tagline">Excellence in Education</p>
+        </div>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#faculties">Faculties</a></li>
+          <li><a href="index.html#team">Team</a></li>
+          <li><a href="result.html" class="active">Result</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+      </div>
+    </div>
+  </header>
+
+  <section class="section" style="text-align:center;">
+    <span class="section-label">Results</span>
+    <h2 class="section-title">Search Your Result</h2>
+    <p class="section-desc" style="margin:0 auto 30px;">Select your result sheet and enter your symbol number to view your performance.</p>
+
+    <div class="result-search-card">
+      <div class="form-group" style="text-align:left;">
+        <label for="resultSheet"><i class="fas fa-file-alt"></i> Select Result Sheet</label>
+        <select id="resultSheet">
+          <option value="">-- Select Result Sheet --</option>
+        </select>
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label for="symbolNumber"><i class="fas fa-hashtag"></i> Symbol Number</label>
+        <input type="text" id="symbolNumber" placeholder="Enter your symbol number" autocomplete="off">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="searchResult()">
+        <i class="fas fa-search"></i> Search Result
+      </button>
+      <div id="searchStatus" style="margin-top:16px;font-size:0.9rem;color:var(--text-light);"></div>
+    </div>
+
+    <div id="resultDisplay"></div>
+  </section>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> <strong>Canvas+2 College of Management</strong>. All rights reserved.</p>
+  </footer>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/sheets-service.js"></script>
+  <script src="assets/js/subject-utils.js"></script>
+  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(r){r.unregister()})}); navigator.serviceWorker.register('/sw.js'); }</script>
+  <script>
+    var _sheetsTabMap = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      authService.init();
+      initNavToggle();
+      loadPublishedSheets();
+      loadContactInfo();
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    });
+
+    async function loadContactInfo() {
+      try {
+        const doc = await db.collection('settings').doc('general').get();
+        if (!doc.exists) return;
+        const s = doc.data();
+        if (s.address) document.querySelector('.top-bar-inner span').innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + s.address;
+        const mini = document.querySelector('.contact-mini');
+        mini.innerHTML = '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone || '9851321240') + '">' + (s.phone || '9851321240') + '</a></span>' + '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone2 || '035590558') + '">' + (s.phone2 || '035590558') + '</a></span>';
+      } catch(e) {}
+    }
+
+    function initNavToggle() {
+      document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+        document.querySelector('nav ul').classList.toggle('open');
+      });
+    }
+
+    async function loadPublishedSheets() {
+      const select = document.getElementById('resultSheet');
+      try {
+        const snap = await db.collection('resultSheets').where('published', '==', true).get();
+        if (snap.empty) {
+          select.innerHTML = '<option value="">-- No results available yet --</option>';
+          return;
+        }
+        let opts = '<option value="">-- Select Result Sheet --</option>';
+        snap.forEach(doc => {
+          const d = doc.data();
+          _sheetsTabMap[doc.id] = d.tabName || d.name;
+          opts += '<option value="' + doc.id + '">' + d.name + '</option>';
+        });
+        select.innerHTML = opts;
+      } catch(e) {
+        select.innerHTML = '<option value="">-- Error loading sheets --</option>';
+      }
+    }
+
+    var _GRADE_EMOJIS = {
+      'A+': { icon: 'fa-star', msg: 'Congratulations! Outstanding achievement! Keep shining bright!', color: '#2e7d32' },
+      'A': { icon: 'fa-star', msg: 'Excellent performance! Outstanding work this term!', color: '#2e7d32' },
+      'B+': { icon: 'fa-thumbs-up', msg: 'Well done! Keep striving for excellence!', color: '#1a73e8' },
+      'C+': { icon: 'fa-check', msg: "You're on the right track. Keep improving!", color: '#f9a825' },
+      'C': { icon: 'fa-check', msg: "Good effort, but there's room for growth.", color: '#f9a825' },
+      'D+': { icon: 'fa-arrow-up', msg: 'Keep pushing forward! You can do better!', color: '#ef6c00' },
+      'D': { icon: 'fa-arrow-up', msg: "You need improvement. Don't give up!", color: '#e65100' },
+      'NG': { icon: 'fa-exclamation-triangle', msg: 'Better luck next time. Keep working hard!', color: '#c62828' }
+    };
+
+    async function searchResult() {
+      const sheetId = document.getElementById('resultSheet').value;
+      const symbol = document.getElementById('symbolNumber').value.trim();
+      const display = document.getElementById('resultDisplay');
+      const status = document.getElementById('searchStatus');
+
+      if (!sheetId) { status.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> Please select a result sheet.</span>'; return; }
+      if (!symbol) { status.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> Please enter your symbol number.</span>'; return; }
+
+      status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+      display.innerHTML = '';
+
+      try {
+        const doc = await db.collection('resultSheets').doc(sheetId).get();
+        if (!doc.exists) { status.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> Result sheet not found.</span>'; return; }
+        const sheet = doc.data();
+        if (!sheet.published) { status.innerHTML = '<span style="color:var(--warning);"><i class="fas fa-clock"></i> This result has not been published yet.</span>'; return; }
+
+        var webUrl = sheet.webUrl;
+        if (!webUrl) {
+          status.innerHTML = '<span style="color:var(--text-light);"><i class="fas fa-info-circle"></i> Result system is being configured. Please check back later.</span>';
+          display.innerHTML = '';
+          return;
+        }
+        sheetsService.setWebAppUrl(webUrl);
+
+        var tabName = sheet.tabName || sheet.name;
+        var result = await sheetsService.fetchResult(tabName, symbol, sheet.sheetId);
+
+        status.innerHTML = '';
+
+        var gpa = result['GPA'] || result['Gpa'] || '';
+        var grade = result['GRADE'] || result['Grade'] || result['Result'] || '';
+        var isNg = grade === 'NG';
+
+        var icon = isNg ? 'fa-exclamation-triangle' : 'fa-star';
+        var color = isNg ? '#c62828' : '#2e7d32';
+        var title = isNg ? 'Better luck next time' : 'Congratulations!';
+        var msg = isNg ? 'Your GPA is <strong style="font-size:28px;color:' + color + ';">' + gpa + '</strong>' : 'Your GPA is <strong style="font-size:28px;color:' + color + ';">' + gpa + '</strong>';
+
+        display.innerHTML = '<div style="max-width:500px;margin:0 auto;padding:40px 20px;text-align:center;background:var(--white);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.1);">' +
+          '<div style="font-size:48px;color:' + color + ';margin-bottom:16px;"><i class="fas ' + icon + '"></i></div>' +
+          '<p style="font-size:22px;font-weight:700;color:var(--text);margin:0 0 8px;">' + title + '</p>' +
+          '<p style="font-size:18px;color:var(--text-light);margin:0;">' + msg + '</p>' +
+        '</div>';
+      } catch(e) {
+        status.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Result not found for this symbol number.') + '</span>';
+        display.innerHTML = '';
+      }
+    }
+  </script>
+</body>
+</html>

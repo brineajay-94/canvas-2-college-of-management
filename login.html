@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Canvas+2 College of Management</title>
+  <meta name="description" content="Login to Canvas+2 College of Management - Teacher and Admin panel access.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="author" content="Canvas+2 College of Management">
+  <link rel="canonical" href="https://canvasplus2.edu.np/login.html">
+  <meta property="og:title" content="Login - Canvas+2 College of Management">
+  <meta property="og:site_name" content="Canvas+2 College of Management">
+  <meta name="theme-color" content="#1a3c6d">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+</head>
+<body>
+  <main class="login-page">
+    <div class="login-container">
+      <div class="logo-area">
+        <img src="assets/images/logo.png" alt="Canvas+2 College of Management" class="logo-img" onerror="this.style.display='none'">
+        <div class="logo-text">
+          <h1>Canvas+2 College of Management</h1>
+        </div>
+      </div>
+      <h2><i class="fas fa-user-lock"></i> Login</h2>
+      <div id="errorMsg" class="error-msg"></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password"><i class="fas fa-lock"></i> Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+      <p style="text-align:center;margin-top:20px;font-size:0.85rem;color:var(--text-light);">
+        <a href="index.html" style="color:var(--primary);font-weight:500;"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      </p>
+    </div>
+  </main>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await authService.init();
+      if (authService.isLoggedIn()) { redirectToDashboard(); return; }
+
+      const form = document.getElementById('loginForm');
+      const errorMsg = document.getElementById('errorMsg');
+      const loginBtn = document.getElementById('loginBtn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        errorMsg.textContent = '';
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+        try {
+          await authService.login(email, password);
+          await authService.init();
+          redirectToDashboard();
+        } catch (err) {
+          const msgs = {
+            'auth/user-not-found': 'No account found with this email',
+            'auth/wrong-password': 'Incorrect password',
+            'auth/invalid-email': 'Invalid email address',
+            'auth/user-disabled': 'This account has been disabled',
+            'auth/too-many-requests': 'Too many attempts. Please try again later'
+          };
+          errorMsg.textContent = msgs[err.code] || err.message || 'Login failed';
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        }
+      });
+    });
+
+    async function loadTopBarContact() {
+      try {
+        const doc = await db.collection('settings').doc('general').get();
+        if (!doc.exists) return;
+        const s = doc.data();
+        if (s.address) document.querySelector('.top-bar-inner span').innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + s.address;
+        const mini = document.querySelector('.contact-mini');
+        mini.innerHTML = '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone || '9851321240') + '">' + (s.phone || '9851321240') + '</a></span>' + '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone2 || '035590558') + '">' + (s.phone2 || '035590558') + '</a></span>';
+      } catch(e) {}
+    }
+
+    function redirectToDashboard() {
+      const role = authService.getRole();
+      if (role === 'admin') window.location.href = 'admin/index.html';
+      else if (role === 'teacher') window.location.href = 'teacher/index.html';
+      else window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

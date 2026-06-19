@@ -1,0 +1,479 @@
+/* ═══════════════════════════════════════════════
+   Canvas+2 Teacher — GitHub-style Theme
+   ═══════════════════════════════════════════════ */
+
+/* ── Subject Cards Grid ── */
+.teacher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.subject-card {
+  background: var(--color-canvas-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: border-color var(--transition);
+  position: relative;
+  animation: cardIn 0.35s ease backwards;
+}
+
+.subject-card:nth-child(1) { animation-delay: 0.03s; }
+.subject-card:nth-child(2) { animation-delay: 0.07s; }
+.subject-card:nth-child(3) { animation-delay: 0.11s; }
+.subject-card:nth-child(4) { animation-delay: 0.15s; }
+.subject-card:nth-child(5) { animation-delay: 0.19s; }
+.subject-card:nth-child(6) { animation-delay: 0.23s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.subject-card:hover {
+  border-color: var(--color-fg-subtle);
+}
+
+.subject-card .card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.subject-card .card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: var(--color-success-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-success-fg);
+  font-size: 1rem;
+}
+
+.subject-card .card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.subject-card h3 {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-fg-default);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.subject-card .meta {
+  font-size: 12px;
+  color: var(--color-fg-muted);
+  margin-bottom: 2px;
+}
+
+.subject-card .card-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.subject-card .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 2em;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  border: 1px solid var(--color-border-muted);
+}
+
+.subject-card .enter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  border: 1px solid var(--color-btn-primary-border);
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.subject-card .enter-btn:hover {
+  background: var(--color-btn-primary-hover-bg);
+}
+
+/* ── Full-screen marks overlay ── */
+.marks-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--color-canvas-default);
+  flex-direction: column;
+  animation: fadeSlideUp 0.2s ease;
+}
+
+.marks-overlay.open { display: flex; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.marks-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--color-sidebar-bg);
+  border-bottom: 1px solid var(--color-border-default);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.marks-header-bar .back-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-muted);
+  transition: background var(--transition);
+}
+
+.marks-header-bar .back-btn:hover {
+  background: var(--color-canvas-subtle);
+  color: var(--color-fg-default);
+}
+
+.marks-header-bar h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-fg-default);
+  flex: 1;
+}
+
+.marks-header-bar h2 i {
+  color: var(--color-accent-fg);
+  margin-right: 6px;
+}
+
+.marks-header-bar .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.marks-header-bar .icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.marks-header-bar .icon-btn:hover {
+  background: var(--color-canvas-subtle);
+  color: var(--color-fg-default);
+}
+
+.marks-header-bar .save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  border: 1px solid var(--color-btn-primary-border);
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.marks-header-bar .save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.marks-header-bar .save-btn:not(:disabled):hover {
+  background: var(--color-btn-primary-hover-bg);
+}
+
+.marks-header-bar .save-btn .badge-count {
+  background: rgba(255,255,255,0.2);
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.marks-stats {
+  padding: 8px 20px;
+  font-size: 12px;
+  color: var(--color-fg-muted);
+  background: var(--color-canvas-default);
+  border-bottom: 1px solid var(--color-border-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.marks-stats .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.marks-stats .stat-item i {
+  color: var(--color-fg-subtle);
+  font-size: 12px;
+}
+
+.marks-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.marks-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.marks-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--color-border-muted);
+  background: var(--color-canvas-default);
+  gap: 12px;
+  transition: background var(--transition);
+}
+
+.marks-row:hover {
+  background: var(--color-canvas-subtle);
+}
+
+.marks-row .sn {
+  font-size: 12px;
+  color: var(--color-fg-subtle);
+  font-weight: 500;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.marks-row .symbol {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-fg-default);
+  width: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marks-row .name {
+  font-size: 13px;
+  color: var(--color-fg-muted);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marks-row .marks-input-wrap {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.marks-row .marks-input {
+  width: 76px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  text-align: center;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  background: var(--color-input-bg);
+  font-weight: 600;
+  color: var(--color-fg-default);
+  outline: none;
+}
+
+.marks-row .marks-input:focus {
+  border-color: var(--color-input-focus-border);
+  box-shadow: 0 0 0 3px var(--color-input-focus-ring);
+}
+
+.marks-row .marks-input.changed {
+  border-color: var(--color-accent-fg);
+  background: var(--color-accent-subtle);
+}
+
+.marks-row .marks-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.marks-row .marks-input.saved {
+  border-color: var(--color-success-emphasis);
+  background: var(--color-success-subtle);
+}
+
+.marks-row .save-indicator {
+  font-size: 12px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color var(--transition);
+}
+
+.marks-row .save-indicator.saved { color: var(--color-success-fg); }
+.marks-row .save-indicator.failed { color: var(--color-danger-fg); }
+.marks-row .save-indicator.saving { color: var(--color-accent-fg); animation: spin 0.8s linear infinite; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Skeleton ── */
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border-muted);
+  background: var(--color-canvas-default);
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-border-muted) 25%, var(--color-canvas-subtle) 50%, var(--color-border-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+  height: 18px;
+}
+
+.skeleton-shimmer.sn { width: 24px; height: 14px; flex-shrink: 0; }
+.skeleton-shimmer.sym { width: 70px; flex-shrink: 0; }
+.skeleton-shimmer.name { flex: 1; }
+.skeleton-shimmer.marks { width: 76px; height: 36px; flex-shrink: 0; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Profile ── */
+.profile-form {
+  max-width: 520px;
+  width: 100%;
+}
+
+/* ── Bottom Navigation (mobile) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: var(--color-sidebar-bg);
+  border-top: 1px solid var(--color-border-default);
+  padding: 4px 0 env(safe-area-inset-bottom, 4px);
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--color-fg-muted);
+  font-size: 10px;
+  font-weight: 500;
+  transition: color var(--transition);
+  min-width: 56px;
+}
+
+.bottom-nav a i {
+  font-size: 18px;
+}
+
+.bottom-nav a.active {
+  color: var(--color-accent-fg);
+}
+
+.bottom-nav a.logout-btn {
+  color: var(--color-danger-fg);
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  .teacher-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-form {
+    max-width: 100%;
+  }
+
+  .marks-overlay.open ~ .bottom-nav {
+    display: none;
+  }
+
+  .marks-row {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .marks-row .sn { width: 20px; font-size: 11px; }
+  .marks-row .symbol { font-size: 12px; width: 60px; }
+  .marks-row .marks-input { width: 64px; font-size: 13px; }
+
+  .marks-header-bar {
+    padding: 10px 14px;
+  }
+
+  .marks-header-bar h2 {
+    font-size: 13px;
+  }
+
+  .marks-stats {
+    padding: 6px 14px;
+  }
+
+  .marks-row .name {
+    display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
+  }
+}

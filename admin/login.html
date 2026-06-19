@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--color-canvas-default); }
+    .login-page { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2" style="height:28px;width:auto;"></div>
+        <div>
+          <div class="login-logo-text">Canvas+2 College of Management</div>
+          <div style="font-size: 12px; color: var(--color-fg-muted);">Admin Panel</div>
+        </div>
+      </div>
+      <h1>Sign in</h1>
+      <p>Enter your credentials to access the admin dashboard</p>
+      <div class="login-error" id="loginError">Invalid email or password</div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" class="form-control" placeholder="admin@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">Sign in</button>
+      </form>
+      <p style="text-align:center;margin-top:20px;font-size:13px;color:var(--color-fg-muted);">
+        <a href="../index.html" style="color:var(--color-accent-fg);">Back to Home</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadAdminTheme();
+      await authService.init();
+      if (authService.isLoggedIn() && authService.isAdmin()) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const form = document.getElementById('loginForm');
+      const errorMsg = document.getElementById('loginError');
+      const loginBtn = document.getElementById('loginBtn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        errorMsg.classList.remove('show');
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in...';
+
+        try {
+          await authService.login(email, password);
+          await authService.init();
+          if (authService.isAdmin()) {
+            window.location.href = 'index.html';
+          } else {
+            errorMsg.textContent = 'Access denied. Admin only.';
+            errorMsg.classList.add('show');
+            await authService.logout();
+          }
+        } catch (err) {
+          errorMsg.textContent = err.message || 'Invalid email or password';
+          errorMsg.classList.add('show');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign in';
+        }
+      });
+    });
+
+    function loadAdminTheme() {
+      var saved = localStorage.getItem('adminTheme') || 'light';
+      if (saved === 'dark') document.documentElement.classList.add('dark');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
+worker/node_modules/
+worker/.env
+
+# Excel files (templates, not source)
+*.xlsx
+
+# Deployment artifacts
+.firebase/

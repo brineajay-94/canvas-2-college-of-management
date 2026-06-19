@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Result - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .result-search-card {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    #resultDisplay {
+      margin-top: 24px;
+    }
+    .grade-message {
+      max-width: 820px;
+      margin: 16px auto 0;
+    }
+    @media print {
+      @page { size: A4; margin: 0; }
+      body > * { display: none !important; }
+      #resultDisplay { display: block !important; }
+      #resultDisplay > div:first-child { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+      #resultDisplay > div:last-child { display: none !important; }
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Admin Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="users.html" class="sidebar-link"><i class="fas fa-users"></i> Users</a>
+      <a href="team.html" class="sidebar-link"><i class="fas fa-user-friends"></i> Team</a>
+      <a href="slider.html" class="sidebar-link"><i class="fas fa-images"></i> Slider</a>
+      <a href="sheet.html" class="sidebar-link"><i class="fas fa-file-alt"></i> Sheet</a>
+      <span class="sidebar-nav-label">Results</span>
+      <a href="view-result.html" class="sidebar-link active"><i class="fas fa-file-invoice"></i> View Result</a>
+      <a href="results.html" class="sidebar-link"><i class="fas fa-cog"></i> Manage Sheets</a>
+    </nav>
+    <a href="../index.html" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Visit Website</a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h1>View Result</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fas fa-search"></i> Search Student Result</span>
+        </div>
+        <div class="panel-body">
+          <div class="result-search-card">
+            <div class="form-group">
+              <label for="resultSheet"><i class="fas fa-file-alt"></i> Select Result Sheet</label>
+              <select id="resultSheet" class="form-control">
+                <option value="">-- Select Result Sheet --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="symbolNumber"><i class="fas fa-hashtag"></i> Symbol Number</label>
+              <input type="text" id="symbolNumber" class="form-control" placeholder="Enter symbol number" autocomplete="off">
+            </div>
+            <div class="form-actions" style="border:none;margin:0;padding:0;">
+              <button class="btn btn-primary" onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div id="searchStatus" style="margin-top:12px;font-size:13px;color:var(--color-fg-muted);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultDisplay"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/sheets-service.js"></script>
+  <script src="../assets/js/subject-utils.js"></script>
+  <script src="../assets/js/admin/admin.js"></script>
+  <script>
+    var _sheetsTabMap = {};
+
+    async function loadPublishedSheets() {
+      var select = document.getElementById('resultSheet');
+      try {
+        var snap = await db.collection('resultSheets').where('published', '==', true).get();
+        if (snap.empty) {
+          select.innerHTML = '<option value="">-- No published sheets --</option>';
+          return;
+        }
+        var opts = '<option value="">-- Select Result Sheet --</option>';
+        snap.forEach(function (doc) {
+          var d = doc.data();
+          _sheetsTabMap[doc.id] = d.tabName || d.name;
+          opts += '<option value="' + doc.id + '">' + d.name + '</option>';
+        });
+        select.innerHTML = opts;
+      } catch (e) {
+        select.innerHTML = '<option value="">-- Error loading sheets --</option>';
+      }
+    }
+
+    var _subjectNames = {
+      'English': { full: 'Compulsory English', short: 'ENG' },
+      'Nepali': { full: 'Compulsory Nepali', short: 'NEP' },
+      'Social': { full: 'Social Studies', short: 'SOC' },
+      'BasicMath': { full: 'Basic Mathematics', short: 'B.MATH' },
+      'Economics': { full: 'Economics', short: 'ECO' },
+      'Account': { full: 'Accountancy', short: 'ACC' },
+      'BusinessStudies': { full: 'Business Studies', short: 'BS' },
+      'ComputerScience': { full: 'Computer Science', short: 'CS' },
+      'HotelManagement': { full: 'Hotel Management', short: 'HM' },
+      'BusinessMath': { full: 'Business Mathematics', short: 'BM' }
+    };
+
+    var _GRADE_EMOJIS = {
+      'A+': { icon: 'fa-star', msg: 'Congratulations! Outstanding achievement! Keep shining bright!', color: '#2e7d32' },
+      'A': { icon: 'fa-star', msg: 'Excellent performance! Outstanding work this term!', color: '#2e7d32' },
+      'B+': { icon: 'fa-thumbs-up', msg: 'Well done! Keep striving for excellence!', color: '#1a73e8' },
+      'C+': { icon: 'fa-check', msg: 'You\'re on the right track. Keep improving!', color: '#f9a825' },
+      'C': { icon: 'fa-check', msg: 'Good effort, but there\'s room for growth.', color: '#f9a825' },
+      'D+': { icon: 'fa-arrow-up', msg: 'Keep pushing forward! You can do better!', color: '#ef6c00' },
+      'D': { icon: 'fa-arrow-up', msg: 'You need improvement. Don\'t give up!', color: '#e65100' },
+      'NG': { icon: 'fa-exclamation-triangle', msg: 'Better luck next time. Keep working hard!', color: '#c62828' }
+    };
+
+    function getGradeMessage(grade) {
+      return _GRADE_EMOJIS[grade] || { icon: 'fa-check', msg: 'Keep up the good work!', color: '#1a73e8' };
+    }
+
+    function getSubjectLabel(raw) {
+      var canon = typeof SubjectUtils !== 'undefined' && SubjectUtils.match ? SubjectUtils.match(raw) : null;
+      if (!canon) return raw;
+      var info = _subjectNames[canon];
+      if (!info) return canon;
+      return info.full;
+    }
+
+    function swapSubjectNames(forceFull) {
+      document.querySelectorAll('#resultDisplay td[data-subj]').forEach(function (td) {
+        var raw = td.getAttribute('data-subj');
+        if (raw) {
+          var prev = window._forceFullNames;
+          window._forceFullNames = forceFull;
+          td.textContent = getSubjectLabel(raw);
+          window._forceFullNames = prev;
+        }
+      });
+    }
+
+    function printGradesheet() {
+      swapSubjectNames(true);
+      var card = document.querySelector('#resultDisplay > div:first-child');
+      if (card) {
+        var wm = document.createElement('img');
+        wm.src = '../assets/images/logo.png';
+        wm.alt = 'Watermark';
+        wm.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);width:280px;height:280px;object-fit:contain;opacity:0.06;pointer-events:none;z-index:999;';
+        card.style.position = 'relative';
+        card.appendChild(wm);
+        setTimeout(function () {
+          window.print();
+          setTimeout(function () {
+            if (wm.parentNode) wm.parentNode.removeChild(wm);
+            swapSubjectNames(false);
+          }, 200);
+        }, 100);
+      } else {
+        window.print();
+        setTimeout(function () { swapSubjectNames(false); }, 500);
+      }
+    }
+
+    async function downloadResult(format) {
+      var card = document.querySelector('#resultDisplay > div:first-child');
+      if (!card) return;
+      var origOverflow = card.style.overflow;
+      card.style.overflow = 'visible';
+      var wm = document.createElement('div');
+      wm.textContent = 'Canvas+2';
+      wm.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:4rem;font-weight:900;color:rgba(26,60,109,0.07);font-family:Georgia,serif;letter-spacing:8px;pointer-events:none;z-index:999;white-space:nowrap;width:100%;text-align:center;';
+      card.style.position = 'relative';
+      card.appendChild(wm);
+      swapSubjectNames(true);
+      try {
+        var canvas = await html2canvas(card, { scale: 4, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false });
+        if (format === 'png') {
+          var link = document.createElement('a');
+          link.download = 'gradesheet.png';
+          link.href = canvas.toDataURL('image/png', 1);
+          link.click();
+        } else if (format === 'pdf') {
+          var imgData = canvas.toDataURL('image/png');
+          var pdf = new window.jspdf.jsPDF({ orientation: canvas.width > canvas.height ? 'l' : 'p', unit: 'mm', format: 'a4' });
+          var pdfW = pdf.internal.pageSize.getWidth();
+          var pdfH = (canvas.height * pdfW) / canvas.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+          pdf.save('gradesheet.pdf');
+        }
+      } catch (e) {
+        showToast('Download failed: ' + e.message, 'error');
+      }
+      if (wm.parentNode) wm.parentNode.removeChild(wm);
+      swapSubjectNames(false);
+      card.style.overflow = origOverflow;
+    }
+
+    async function searchResult() {
+      var sheetId = document.getElementById('resultSheet').value;
+      var symbol = document.getElementById('symbolNumber').value.trim();
+      var display = document.getElementById('resultDisplay');
+      var status = document.getElementById('searchStatus');
+
+      if (!sheetId) { status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> Select a result sheet.</span>'; return; }
+      if (!symbol) { status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> Enter a symbol number.</span>'; return; }
+
+      status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+      display.innerHTML = '';
+
+      try {
+        var doc = await db.collection('resultSheets').doc(sheetId).get();
+        if (!doc.exists) { status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> Sheet not found.</span>'; return; }
+        var sheet = doc.data();
+
+        var webUrl = sheet.webUrl;
+        if (!webUrl) { status.innerHTML = '<span style="color:var(--color-fg-muted);"><i class="fas fa-info-circle"></i> No web URL configured.</span>'; return; }
+        sheetsService.setWebAppUrl(webUrl);
+
+        var tabName = sheet.tabName || sheet.name;
+        var result = await sheetsService.fetchResult(tabName, symbol, sheet.sheetId);
+
+        status.innerHTML = '<span style="color:var(--color-success-fg);"><i class="fas fa-check-circle"></i> Result found!</span>';
+
+        var html = '<div style="max-width:820px;margin:0 auto;background:var(--color-canvas-default);border-radius:var(--radius-md);border:1px solid var(--color-border-default);overflow:hidden;text-align:left;">';
+        html += '<div style="padding:24px 24px 16px;border-bottom:1px solid var(--color-border-default);text-align:center;">';
+        html += '<div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border:2px solid var(--color-border-default);overflow:hidden;">';
+        html += '<img src="../assets/images/logo.png" alt="Logo" style="width:44px;height:44px;object-fit:contain;">';
+        html += '</div>';
+        html += '<h3 style="margin:0;font-size:16px;font-weight:700;color:var(--color-fg-default);">Canvas+2 College of Management</h3>';
+        html += '<p style="margin:4px 0 0;font-size:14px;font-weight:600;color:var(--color-fg-default);letter-spacing:1px;text-transform:uppercase;">GRADE SHEET</p>';
+        html += '<p style="margin:2px 0 0;font-size:12px;color:var(--color-fg-muted);">' + sheet.name + '</p>';
+        html += '</div>';
+        var nameKey = Object.keys(result).find(function (k) { return /name|student/i.test(k) && !/TH|PR/i.test(k); }) || '';
+        var studentName = result[nameKey] || '';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;border-bottom:1px solid var(--color-border-muted);font-size:14px;">';
+        html += '<div><span style="display:inline-block;padding:2px 10px;background:var(--color-success-emphasis);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:600;margin-right:8px;">SYMBOL NO</span><span style="font-weight:700;color:var(--color-fg-default);">' + symbol + '</span></div>';
+        html += '<div style="text-align:right;"><span style="display:inline-block;padding:2px 10px;background:var(--color-success-emphasis);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:600;margin-right:8px;">STUDENT</span><span style="font-weight:600;color:var(--color-fg-default);">' + studentName + '</span></div>';
+        html += '</div>';
+        var subjectRows = [];
+        var skipKeys = Object.keys(result).filter(function (k) { return /symbol|name|total|percentage|gpa|grade|result|sn|s\.n|^$/i.test(k); });
+        var detected = {};
+        Object.keys(result).forEach(function (k) {
+          var t = String(k).trim();
+          if (/ TH$/i.test(t)) { var s = t.replace(/ TH$/i, '').trim(); if (!detected[s]) detected[s] = {}; detected[s].thKey = k; }
+          if (/ PR$/i.test(t)) { var s = t.replace(/ PR$/i, '').trim(); if (!detected[s]) detected[s] = {}; detected[s].prKey = k; }
+        });
+        var hasThPr = Object.keys(detected).some(function (s) { return detected[s].thKey || detected[s].prKey; });
+        if (!hasThPr) {
+          Object.keys(result).forEach(function (k) {
+            if (skipKeys.indexOf(k) >= 0) return;
+            if (!detected[k]) detected[k] = { totalKey: k };
+          });
+        }
+        Object.keys(detected).forEach(function (subj) {
+          var th, pr, thVal, prVal, subjTotal, isCombined = false;
+          if (detected[subj].totalKey) {
+            isCombined = true;
+            var v = result[detected[subj].totalKey];
+            subjTotal = (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+            thVal = ''; prVal = '';
+          } else {
+            th = detected[subj].thKey ? result[detected[subj].thKey] : undefined;
+            pr = detected[subj].prKey ? result[detected[subj].prKey] : undefined;
+            thVal = (th !== undefined && th !== null && th !== '') ? th : '';
+            prVal = (pr !== undefined && pr !== null && pr !== '') ? pr : '';
+            if (thVal === '' && prVal === '') return;
+            subjTotal = (thVal !== '' && prVal !== '') ? (Number(thVal) + Number(prVal)) : (thVal !== '' ? Number(thVal) : '');
+          }
+          if (!isCombined && thVal === '' && prVal === '') return;
+          if (isCombined && subjTotal === '') return;
+          var gp = '', gr = '';
+          if (subjTotal !== '' && !isNaN(subjTotal)) {
+            var t = Number(subjTotal);
+            gp = t >= 90 ? '4.0' : t >= 80 ? '3.6' : t >= 70 ? '3.2' : t >= 60 ? '2.8' : t >= 50 ? '2.4' : t >= 40 ? '2.0' : t >= 35 ? '1.6' : '0';
+            gr = t >= 90 ? 'A+' : t >= 80 ? 'A' : t >= 70 ? 'B+' : t >= 60 ? 'C+' : t >= 50 ? 'C' : t >= 40 ? 'D+' : t >= 35 ? 'D' : 'NG';
+            if (!isCombined && (Number(thVal) < 27 || (prVal !== '' && Number(prVal) < 10) || t < 35)) { gp = '0'; gr = 'NG'; }
+            if (isCombined && t < 35) { gp = '0'; gr = 'NG'; }
+          }
+          subjectRows.push({ raw: subj, label: getSubjectLabel(subj), th: thVal, pr: prVal, total: subjTotal, gp: gp, grade: gr });
+        });
+        var total = result['TOTAL'] || result['Total'] || '';
+        var percentage = result['PERCENTAGE'] || result['Percentage'] || '';
+        var gpa = result['GPA'] || result['Gpa'] || '';
+        var grade = result['GRADE'] || result['Grade'] || result['Result'] || '';
+        html += '<div class="table-container" style="border-radius:0;border-left:none;border-right:none;">';
+        html += '<table>';
+        html += '<thead><tr><th style="text-align:center;width:40px;">S.N.</th><th style="text-align:left;">Subject</th><th style="text-align:center;width:48px;">TH</th><th style="text-align:center;width:48px;">PR</th><th style="text-align:center;width:56px;">Total</th><th style="text-align:center;width:48px;">GP</th><th style="text-align:center;width:60px;">Grade</th></tr></thead><tbody>';
+        subjectRows.forEach(function (row, i) {
+          var isNg = row.grade === 'NG';
+          html += '<tr>';
+          html += '<td style="text-align:center;">' + (i + 1) + '</td>';
+          html += '<td data-subj="' + row.raw.replace(/"/g, '&quot;') + '" style="font-weight:500;">' + row.label + '</td>';
+          html += '<td style="text-align:center;">' + (row.th !== '' ? row.th : '-') + '</td>';
+          html += '<td style="text-align:center;">' + (row.pr !== '' ? row.pr : '-') + '</td>';
+          html += '<td style="text-align:center;font-weight:600;' + (isNg ? 'color:var(--color-danger-fg);' : '') + '">' + (row.total !== '' ? row.total : '-') + '</td>';
+          html += '<td style="text-align:center;' + (isNg ? 'color:var(--color-danger-fg);font-weight:600;' : '') + '">' + row.gp + '</td>';
+          var gc = isNg ? 'var(--color-danger-fg)' : row.grade === 'A+' ? '#2e7d32' : 'var(--color-fg-default)';
+          html += '<td style="text-align:center;font-weight:700;color:' + gc + ';">' + row.grade + '</td>';
+          html += '</tr>';
+        });
+        var totalTH = 0, totalPR = 0, totalSum = 0, hasTH = false, hasPR = false;
+        subjectRows.forEach(function (row) {
+          if (row.th !== '' && !isNaN(Number(row.th))) { totalTH += Number(row.th); hasTH = true; }
+          if (row.pr !== '' && !isNaN(Number(row.pr))) { totalPR += Number(row.pr); hasPR = true; }
+          if (row.total !== '' && !isNaN(Number(row.total))) totalSum += Number(row.total);
+        });
+        html += '</tbody><tfoot><tr style="background:var(--color-canvas-subtle);font-weight:700;">';
+        html += '<td style="text-align:center;"></td><td style="font-size:12px;">GRAND TOTAL</td>';
+        html += '<td style="text-align:center;">' + (hasTH ? totalTH : '') + '</td>';
+        html += '<td style="text-align:center;">' + (hasPR ? totalPR : '') + '</td>';
+        html += '<td style="text-align:center;font-size:15px;">' + totalSum + '</td>';
+        html += '<td></td><td></td>';
+        html += '</tr></tfoot></table></div>';
+        html += '<div style="padding:16px 24px;display:flex;justify-content:center;flex-wrap:wrap;gap:16px;border-top:1px solid var(--color-border-muted);">';
+        if (total !== '') html += '<div style="padding:0 16px;border-right:1px solid var(--color-border-muted);"><strong style="display:block;font-size:10px;text-transform:uppercase;color:var(--color-fg-muted);letter-spacing:1px;margin-bottom:2px;">Total</strong><span style="font-size:18px;font-weight:700;color:var(--color-fg-default);">' + total + '</span></div>';
+        if (percentage !== '') html += '<div style="padding:0 16px;border-right:1px solid var(--color-border-muted);"><strong style="display:block;font-size:10px;text-transform:uppercase;color:var(--color-fg-muted);letter-spacing:1px;margin-bottom:2px;">Percentage</strong><span style="font-size:18px;font-weight:700;color:var(--color-fg-default);">' + percentage + '</span></div>';
+        if (gpa !== '') html += '<div style="padding:0 16px;border-right:1px solid var(--color-border-muted);"><strong style="display:block;font-size:10px;text-transform:uppercase;color:var(--color-fg-muted);letter-spacing:1px;margin-bottom:2px;">GPA</strong><span style="font-size:20px;font-weight:800;' + (grade === 'NG' ? 'color:var(--color-danger-fg);' : 'color:var(--color-success-emphasis);') + '">' + gpa + '</span></div>';
+        if (grade !== '') {
+          var gInfo = getGradeMessage(grade);
+          html += '<div style="padding:0 16px;"><strong style="display:block;font-size:10px;text-transform:uppercase;color:var(--color-fg-muted);letter-spacing:1px;margin-bottom:2px;">Grade</strong><span style="font-size:20px;font-weight:800;color:' + gInfo.color + ';">' + grade + '</span></div>';
+        }
+        html += '</div>';
+        html += '<div style="padding:10px 20px;text-align:center;font-size:11px;color:var(--color-fg-muted);border-top:1px solid var(--color-border-muted);">Canvas+2 College of Management, Triyuga-11, Gaighat, Udayapur, Nepal</div>';
+        html += '<div style="padding:20px 30px;display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--color-border-muted);">';
+        html += '<div style="text-align:center;"><div style="width:160px;border-top:1px solid var(--color-fg-muted);margin-bottom:4px;"></div><div style="font-size:12px;color:var(--color-fg-muted);">Exam Controller</div></div>';
+        html += '<div style="text-align:center;"><div style="width:160px;border-top:1px solid var(--color-fg-muted);margin-bottom:4px;"></div><div style="font-size:12px;color:var(--color-fg-muted);">Principal\u2019s Signature</div></div>';
+        html += '</div></div>';
+
+        html += '<div style="margin-top:16px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">';
+        html += '<button class="btn btn-secondary" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> Download PNG</button>';
+        html += '<button class="btn btn-secondary" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> Download PDF</button>';
+        html += '<button class="btn btn-primary" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>';
+        html += '</div>';
+        display.innerHTML = html;
+      } catch (e) {
+        status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Result not found.') + '</span>';
+        display.innerHTML = '';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadPublishedSheets();
+    });
+  </script>
+</body>
+</html>

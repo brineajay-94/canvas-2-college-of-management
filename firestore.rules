@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================
+    // PUBLIC READ ACCESS
+    // ========================
+
+    // Staff/Team members - anyone can read
+    match /staff/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Website settings - anyone can read
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ========================
+    // RESULT SHEETS
+    // ========================
+
+    match /resultSheets/{doc} {
+      // Anyone can read result sheets (published status filter is applied client-side)
+      allow read: if true;
+
+      // Only admins can create/update/delete sheets
+      allow create: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      allow update: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher');
+
+      allow delete: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ========================
+    // USERS
+    // ========================
+
+    match /users/{uid} {
+      // Users can read their own data; admins can read all
+      allow read: if request.auth != null
+        && (request.auth.uid == uid
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+
+      // Only admins can create/update/delete user documents
+      allow create: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      allow update: if request.auth != null
+        && (request.auth.uid == uid  // Users can update their own profile
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));  // Admins can update any
+
+      allow delete: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ========================
+    // AUTO ASSIGNMENTS (teacher-subject-sheet mappings)
+    // ========================
+
+    match /autoAssignments/{doc} {
+      // Teachers can read their own assignments; admins can read all
+      allow read: if request.auth != null
+        && request.auth.uid != null
+        && (
+          resource.data.teacherId == request.auth.uid
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        );
+
+      // Only admins can create/update/delete
+      allow create, update, delete: if request.auth != null
+        && request.auth.uid != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

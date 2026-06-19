@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | Canvas+2 College of Management</title>
+  <meta name="description" content="Page not found - Canvas+2 College of Management. The page you are looking for does not exist or has been moved. Return to our homepage.">
+  <meta name="keywords" content="Canvas+2 College of Management, 404 error, page not found, Udayapur college Nepal">
+  <meta name="author" content="Canvas+2 College of Management">
+  <meta name="robots" content="noindex, follow">
+  <meta name="googlebot" content="noindex, follow">
+  <meta name="language" content="English">
+  <link rel="canonical" href="https://canvasplus2.edu.np/404.html">
+  <meta property="og:title" content="Page Not Found - Canvas+2 College of Management">
+  <meta property="og:description" content="Page not found. Return to Canvas+2 College of Management homepage.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://canvasplus2.edu.np/404.html">
+  <meta property="og:image" content="https://canvasplus2.edu.np/assets/images/logo.png">
+  <meta property="og:site_name" content="Canvas+2 College of Management">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Page Not Found - Canvas+2 College of Management">
+  <meta name="theme-color" content="#1a3c6d">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <span><i class="fas fa-map-marker-alt"></i> Triyuga-11, Gaighat, Udayapur, Nepal</span>
+      <div class="contact-mini">
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:9851321240">9851321240</a></span>
+        <span><i class="fas fa-phone-alt"></i> <a href="tel:035590558">035590558</a></span>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <img src="assets/images/logo.png" alt="Canvas+2 College of Management" class="logo-img" onerror="this.style.display='none'">
+        <div class="logo-text">
+          <h1>Canvas+2 College of Management</h1>
+          <p class="tagline">Excellence in Education</p>
+        </div>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#faculties">Faculties</a></li>
+          <li><a href="index.html#team">Team</a></li>
+          <li><a href="result.html">Result</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+      </div>
+    </div>
+  </header>
+
+  <main class="page-404">
+    <h1>404</h1>
+    <p><i class="fas fa-exclamation-triangle" style="color:var(--accent);"></i> Oops! The page you're looking for doesn't exist.</p>
+    <a href="index.html" class="btn btn-primary btn-lg"><i class="fas fa-home"></i> Go Back Home</a>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> <strong>Canvas+2 College of Management</strong>. All rights reserved.</p>
+  </footer>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+      document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+        document.querySelector('nav ul').classList.toggle('open');
+      });
+      await loadTopBarContact();
+    });
+
+    async function loadTopBarContact() {
+      try {
+        const doc = await db.collection('settings').doc('general').get();
+        if (!doc.exists) return;
+        const s = doc.data();
+        if (s.address) document.querySelector('.top-bar-inner span').innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + s.address;
+        const mini = document.querySelector('.contact-mini');
+        mini.innerHTML = '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone || '9851321240') + '">' + (s.phone || '9851321240') + '</a></span>' + '<span><i class="fas fa-phone-alt"></i> <a href="tel:' + (s.phone2 || '035590558') + '">' + (s.phone2 || '035590558') + '</a></span>';
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>

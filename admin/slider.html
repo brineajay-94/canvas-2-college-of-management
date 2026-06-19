@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slider - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <style>
+    .slider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .slider-card {
+      background: var(--color-canvas-subtle);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+    }
+    .slider-card:hover { border-color: var(--color-fg-subtle); }
+    .slider-card-preview {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      background: var(--color-canvas-default);
+    }
+    .slider-card-preview.hidden { display: none; }
+    .slider-card-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-fg-muted);
+      font-size: 32px;
+      background: var(--color-canvas-subtle);
+    }
+    .slider-card-body {
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .slider-card-body input {
+      flex: 1;
+      border: none;
+      background: none;
+      color: var(--color-fg-default);
+      font-size: 12px;
+      outline: none;
+      padding: 4px 0;
+      min-width: 0;
+    }
+    .slider-card-body input::placeholder { color: var(--color-fg-muted); }
+    .slider-card-remove {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-fg-muted);
+      flex-shrink: 0;
+      transition: all var(--transition);
+    }
+    .slider-card-remove:hover {
+      background: var(--color-danger-subtle);
+      color: var(--color-danger-fg);
+    }
+    .slider-add-card {
+      border: 2px dashed var(--color-border-default);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--color-fg-muted);
+      transition: all var(--transition);
+      aspect-ratio: 16 / 9;
+      background: none;
+      width: 100%;
+    }
+    .slider-add-card:hover {
+      border-color: var(--color-success-emphasis);
+      color: var(--color-success-emphasis);
+      background: var(--color-success-subtle);
+    }
+    .slider-add-card i { font-size: 28px; }
+    .slider-add-card span { font-size: 12px; font-weight: 500; }
+  </style>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Admin Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="users.html" class="sidebar-link">
+        <i class="fas fa-users"></i> Users
+      </a>
+      <a href="team.html" class="sidebar-link">
+        <i class="fas fa-user-friends"></i> Team
+      </a>
+      <a href="slider.html" class="sidebar-link active">
+        <i class="fas fa-images"></i> Slider
+      </a>
+      <a href="sheet.html" class="sidebar-link">
+        <i class="fas fa-file-alt"></i> Sheet
+      </a>
+      <span class="sidebar-nav-label">Results</span>
+      <a href="view-result.html" class="sidebar-link">
+        <i class="fas fa-file-invoice"></i> View Result
+      </a>
+      <a href="results.html" class="sidebar-link">
+        <i class="fas fa-cog"></i> Manage Sheets
+      </a>
+    </nav>
+          <a href="../index.html" class="sidebar-link" target="_blank">
+        <i class="fas fa-external-link-alt"></i> Visit Website
+      </a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1>Slider</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Hero Slider Images</span>
+        </div>
+        <div class="panel-body">
+          <form id="sliderForm">
+            <p style="color:var(--color-fg-muted);margin-bottom:16px;font-size:13px;">Click the <strong>+</strong> card to add a new slider image. Enter a URL and preview will appear automatically.</p>
+            <div class="slider-grid" id="sliderGrid"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Slider</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/admin/admin.js"></script>
+  <script src="../assets/js/admin/slider.js"></script>
+</body>
+</html>

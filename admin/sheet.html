@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheet - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <style>
+    .sheet-overlay { position:fixed; inset:0; z-index:200; background:var(--color-canvas-default); display:none; flex-direction:column; }
+    .sheet-overlay.open { display:flex; }
+    .sheet-bar { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--color-canvas-subtle); border-bottom:1px solid var(--color-border-default); position:sticky; top:0; z-index:10; }
+    .sheet-bar h2 { font-size:1rem; font-weight:600; color:var(--color-success-emphasis); flex:1; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sheet-btn { height:34px; padding:0 14px; border-radius:var(--radius-sm); display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; font-weight:500; border:1px solid var(--color-border-default); background:var(--color-btn-bg); color:var(--color-fg-default); white-space:nowrap; }
+    .sheet-btn:hover { border-color:var(--color-fg-subtle); background:var(--color-btn-hover-bg); }
+    .sheet-btn:disabled { opacity:0.5; }
+    .sheet-btn-primary { background:var(--color-success-emphasis); color:#fff; border-color:var(--color-success-emphasis); }
+    .sheet-btn-primary:hover { filter:brightness(1.08); }
+    .sheet-back { width:36px; height:36px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--color-fg-muted); font-size:1.2rem; }
+    .sheet-back:hover { background:var(--color-canvas-subtle); color:var(--color-fg-default); }
+    .sheet-badge { display:none; background:rgba(255,255,255,0.25); padding:1px 7px; border-radius:10px; font-size:0.72rem; }
+    .sheet-badge.show { display:inline; }
+    .sheet-info { padding:8px 16px; font-size:0.78rem; color:var(--color-fg-muted); background:var(--color-canvas-subtle); border-bottom:1px solid var(--color-border-muted); display:flex; justify-content:space-between; }
+    .sheet-body { flex:1; overflow:auto; }
+    .sheet-wrap { display:inline-block; min-width:100%; }
+    .sheet-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+    .sheet-table thead { position:sticky; top:0; z-index:5; }
+    .sheet-table thead tr:first-child th { background:var(--color-success-emphasis); color:#fff; font-weight:600; font-size:12px; padding:9px 10px; border-right:1px solid rgba(255,255,255,0.12); white-space:nowrap; text-align:left; }
+    .sheet-table thead tr:first-child th:last-child { border-right:none; }
+    .sheet-table thead tr:last-child th { background:#238636; color:rgba(255,255,255,0.9); font-weight:500; font-size:11px; padding:4px 8px; border-right:1px solid rgba(255,255,255,0.08); text-align:center; white-space:nowrap; text-transform:uppercase; letter-spacing:0.04em; }
+    .sheet-table thead tr:last-child th:last-child { border-right:none; }
+    .sheet-table tbody tr:nth-child(even) { background:rgba(45,164,78,0.03); }
+    .sheet-table tbody tr:hover { background:rgba(45,164,78,0.06); }
+    .sheet-table tbody tr:last-child td { border-bottom:1px solid var(--color-border-default); }
+    .sheet-table td { padding:0; border-right:1px solid var(--color-border-muted); border-bottom:1px solid var(--color-border-muted); vertical-align:middle; white-space:nowrap; }
+    .sheet-table td:last-child { border-right:none; }
+    .sheet-cell { width:100%; border:none; background:transparent; padding:6px 8px; font-size:13px; font-family:var(--font); color:var(--color-fg-default); outline:none; box-sizing:border-box; min-width:70px; }
+    .sheet-cell:focus { background:rgba(45,164,78,0.06); box-shadow:inset 0 0 0 2px var(--color-success-emphasis); position:relative; z-index:1; }
+    .sheet-cell.changed { background:#fff3cd !important; }
+    :root.dark .sheet-cell:focus { background:rgba(45,164,78,0.12); }
+    :root.dark .sheet-table tbody tr:nth-child(even) { background:rgba(45,164,78,0.04); }
+    :root.dark .sheet-table tbody tr:hover { background:rgba(45,164,78,0.08); }
+    .sheet-loading { display:flex; align-items:center; justify-content:center; padding:60px 20px; color:var(--color-fg-muted); font-size:14px; gap:10px; }
+    .sheet-err { padding:40px; text-align:center; color:var(--color-danger-fg); font-size:14px; }
+    .th-cell { width:58px; text-align:center; border:1px solid var(--color-border-default); border-radius:6px; padding:6px 4px; font-size:13px; font-weight:500; font-family:var(--font); color:var(--color-fg-default); background:var(--color-canvas-default); outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+    .th-cell:focus { border-color:var(--color-success-emphasis); box-shadow:0 0 0 2px var(--color-success-subtle); }
+    .th-cell.saved { border-color:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,0.2); }
+    .th-cell.error { border-color:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,0.2); }
+    @media (max-width:768px) {
+      .sheet-bar { padding:10px 12px; flex-wrap:wrap; }
+      .sheet-bar h2 { font-size:0.9rem; }
+      .sheet-btn { height:30px; padding:0 10px; font-size:0.75rem; }
+      .sheet-cell { padding:5px 6px; font-size:12px; min-width:56px; }
+      .sheet-table thead tr:first-child th { padding:7px 6px; font-size:11px; }
+      .sheet-table thead tr:last-child th { padding:3px 6px; font-size:10px; }
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Admin Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="users.html" class="sidebar-link">
+        <i class="fas fa-users"></i> Users
+      </a>
+      <a href="team.html" class="sidebar-link">
+        <i class="fas fa-user-friends"></i> Team
+      </a>
+      <a href="slider.html" class="sidebar-link">
+        <i class="fas fa-images"></i> Slider
+      </a>
+      <a href="sheet.html" class="sidebar-link active">
+        <i class="fas fa-file-alt"></i> Sheet
+      </a>
+      <span class="sidebar-nav-label">Results</span>
+      <a href="view-result.html" class="sidebar-link">
+        <i class="fas fa-file-invoice"></i> View Result
+      </a>
+      <a href="results.html" class="sidebar-link">
+        <i class="fas fa-cog"></i> Manage Sheets
+      </a>
+    </nav>
+          <a href="../index.html" class="sidebar-link" target="_blank">
+        <i class="fas fa-external-link-alt"></i> Visit Website
+      </a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1>Sheet</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel" id="setupGuide" style="border-left:3px solid var(--color-success-emphasis);">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fas fa-info-circle"></i> Setup Guide</span>
+          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('setupGuide').remove()">Dismiss</button>
+        </div>
+        <div class="panel-body" style="font-size:13px;line-height:1.6;color:var(--color-fg-muted);">
+          <ol style="margin-left:18px;">
+            <li><strong>Create a Google Sheet</strong> â€” Row 1 headers: <code>Symbol Number, Student Name, Subject1, Subject2, ..., Total, GPA, Result</code>. Each tab = one result sheet (e.g., "Class 11 Management").</li>
+            <li><strong>Add the script</strong> â€” Extensions &gt; Apps Script &gt; paste the code from <code>code.gs</code> &gt; Deploy &gt; New deployment &gt; Web app (Execute as: Me, Access: Anyone).</li>
+            <li><strong>Copy the web app URL</strong> â€” Paste it below and click <strong>Save Web App URL</strong>.</li>
+            <li><strong>Add a sheet record</strong> â€” Click <strong>Add Sheet</strong>, enter a name matching the tab name in your spreadsheet.</li>
+            <li><strong>Publish</strong> the sheet record to make it visible on the public result search page.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Result Sheets</span>
+          <div class="panel-actions">
+            <button class="btn btn-primary" onclick="openAddSheetModal()">
+              <i class="fas fa-plus"></i> Add Sheet
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sheet Name</th>
+                  <th>Sheet ID</th>
+                  <th>Tab Name</th>
+                  <th>Status</th>
+                  <th>Published</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sheetsTableBody">
+                <tr><td colspan="6"><div class="empty-state"><h3>No sheets added yet. Click Add Sheet to begin.</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="sheetModal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-header">
+        <span class="modal-title" id="sheetModalTitle">Add Sheet</span>
+        <button class="modal-close" onclick="closeModal('sheetModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="sheetForm">
+          <div class="form-group">
+            <label for="sheetName">Sheet Name <span style="color:var(--color-danger-fg);">*</span></label>
+            <input type="text" id="sheetName" class="form-control" placeholder="e.g. Class 11 Management" required>
+          </div>
+          <div class="form-group">
+            <label for="sheetId">Google Sheet ID <span style="color:var(--color-danger-fg);">*</span></label>
+            <input type="text" id="sheetId" class="form-control" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" required>
+            <p style="font-size:12px;color:var(--color-fg-muted);margin-top:4px;">From the sheet URL: <code>https://docs.google.com/spreadsheets/d/<strong>YOUR_SHEET_ID</strong>/edit</code></p>
+          </div>
+          <div class="form-group">
+            <label for="sheetTabName">Tab Name <span style="color:var(--color-danger-fg);">*</span></label>
+            <input type="text" id="sheetTabName" class="form-control" placeholder="e.g. Class 11 Management" required>
+            <p style="font-size:12px;color:var(--color-fg-muted);margin-top:4px;">Must match the tab name exactly (case-sensitive).</p>
+          </div>
+          <div class="form-group">
+            <label for="sheetWebUrl">Apps Script Web App URL <span style="color:var(--color-danger-fg);">*</span></label>
+            <input type="url" id="sheetWebUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" required>
+          </div>
+          <div id="connectionStatus" style="font-size:13px;margin-bottom:12px;"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="testConnection()" id="testConnBtn">
+              <i class="fas fa-plug"></i> Test Connection
+            </button>
+            <button type="submit" class="btn btn-primary">Save Sheet</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('sheetModal')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Full-screen Spreadsheet Overlay ── -->
+  <div class="sheet-overlay" id="spreadsheetOverlay">
+    <div class="sheet-bar">
+      <button class="sheet-back" onclick="closeSpreadsheet()"><i class="fas fa-arrow-left"></i></button>
+      <h2><span id="spreadsheetTitle"></span></h2>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="sheet-btn" onclick="refreshSpreadsheet()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+        <button class="sheet-btn sheet-btn-primary" id="spreadsheetSaveAll" onclick="saveAllSpreadsheet()"><i class="fas fa-save"></i> Save All <span class="sheet-badge" id="spreadsheetBadge">0</span></button>
+      </div>
+    </div>
+    <div class="sheet-info">
+      <span id="spreadsheetRowCount"></span>
+      <span id="spreadsheetChangeCount">0 changed</span>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-wrap" id="spreadsheetContainer"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/sheets-service.js"></script>
+  <script src="../assets/js/subject-utils.js"></script>
+  <script src="../assets/js/admin/admin.js"></script>
+  <script src="../assets/js/admin/sheet.js"></script>
+</body>
+</html>

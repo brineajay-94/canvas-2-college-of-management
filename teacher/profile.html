@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/images/logo.png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/teacher.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(r){r.unregister()})}); navigator.serviceWorker.register('/sw.js'); }</script>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Teacher Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="profile.html" class="sidebar-link active"><i class="fas fa-user-cog"></i> My Profile</a>
+    </nav>
+    <a href="../index.html" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Visit Website</a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="authService.logout()"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h1>My Profile</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <span id="teacherName" style="font-size:13px;font-weight:500;color:var(--color-fg-muted);margin-right:4px;"></span>
+        <div class="admin-avatar" id="teacherAvatar">T</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <form class="profile-form" id="profileForm">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title"><i class="fas fa-user-circle"></i> Personal Information</span></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="profileName">Full Name</label>
+              <input type="text" id="profileName" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="profileEmail">Email</label>
+              <input type="email" id="profileEmail" class="form-control" disabled style="background:var(--color-canvas-subtle);color:var(--color-fg-muted);">
+            </div>
+            <div class="form-group">
+              <label for="profileNewPassword">New Password (leave blank to keep current)</label>
+              <input type="password" id="profileNewPassword" class="form-control" minlength="6" placeholder="Enter new password">
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Profile</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Bottom Navigation (mobile) ── -->
+  <nav class="bottom-nav">
+    <a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="profile.html" class="active"><i class="fas fa-user"></i> Profile</a>
+    <a href="#" class="logout-btn" onclick="authService.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    function toggleSidebar() {
+      var s = document.getElementById('sidebar');
+      if (!s) return;
+      var o = document.getElementById('sidebarOverlay');
+      s.classList.toggle('open');
+      if (o) o.classList.toggle('show', s.classList.contains('open'));
+    }
+    document.getElementById('sidebarOverlay').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('open');
+      this.classList.remove('show');
+    });
+    function toggleAdminTheme() {
+      var d = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('adminTheme', d ? 'dark' : 'light');
+      var i = document.querySelector('.header-btn[onclick*="toggleAdminTheme"] i');
+      if (i) i.className = d ? 'fas fa-sun' : 'fas fa-moon';
+    }
+  </script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await authService.init();
+      if (!authService.requireTeacher('../login.html')) return;
+
+      const user = authService.userData;
+      const name = user?.fullName || 'Teacher';
+      document.getElementById('teacherName').textContent = name;
+      document.getElementById('teacherAvatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profileName').value = name;
+      document.getElementById('profileEmail').value = user?.email || '';
+
+      document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('profileName').value.trim();
+        const newPassword = document.getElementById('profileNewPassword').value;
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Updating...';
+
+        try {
+          await authService.updateProfile({ fullName: name });
+          if (newPassword) {
+            await authService.changePassword(newPassword);
+          }
+          document.getElementById('teacherName').textContent = name;
+          document.getElementById('teacherAvatar').textContent = name.charAt(0).toUpperCase();
+          showToast('Profile updated successfully');
+        } catch (err) {
+          showToast(err.message || 'Error updating profile', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-save"></i> Update Profile';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

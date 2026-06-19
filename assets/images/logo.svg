@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">
+  <rect width="200" height="50" fill="#1a237e" rx="5"/>
+  <text x="15" y="33" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">Canvas +2</text>
+  <text x="115" y="33" font-family="Arial, sans-serif" font-size="12" fill="#ff6f00" font-weight="bold">COLLEGE</text>
+</svg>

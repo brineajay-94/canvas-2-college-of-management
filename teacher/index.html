@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/images/logo.png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/teacher.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(r){r.unregister()})}); navigator.serviceWorker.register('/sw.js'); }</script>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Teacher Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="profile.html" class="sidebar-link"><i class="fas fa-user-cog"></i> My Profile</a>
+    </nav>
+    <a href="../index.html" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Visit Website</a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="authService.logout()"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h1>My Dashboard</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <span id="teacherName" style="font-size:13px;font-weight:500;color:var(--color-fg-muted);margin-right:4px;"></span>
+        <div class="admin-avatar" id="teacherAvatar">T</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fas fa-book-open"></i> My Assigned Subjects</span>
+        </div>
+        <div class="panel-body">
+          <div class="teacher-grid" id="assignedSubjects">
+            <p style="grid-column:1/-1;color:var(--color-fg-muted);">Loading your assignments...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Full-screen marks overlay ── -->
+  <div class="marks-overlay" id="marksOverlay">
+    <div class="marks-header-bar">
+      <button class="back-btn" onclick="closeMarksEntry()"><i class="fas fa-arrow-left"></i></button>
+      <h2><i class="fas fa-pen"></i><span id="marksOverlayTitle"></span></h2>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="refreshMarksEntry()" title="Refresh data"><i class="fas fa-sync-alt"></i></button>
+        <button class="save-btn" id="saveAllBtn" onclick="saveAllMarks()">
+          <i class="fas fa-check"></i> Save <span class="badge-count" id="saveBadgeCount">0</span>
+        </button>
+      </div>
+    </div>
+    <div class="marks-stats">
+      <span class="stat-item"><i class="fas fa-users"></i> <span id="marksStudentCount"></span></span>
+      <span class="stat-item"><i class="fas fa-pen"></i> <span id="marksChangeCount">0 changed</span></span>
+    </div>
+    <div class="marks-body">
+      <div class="marks-list" id="marksList">
+        <div id="marksSkeleton" style="display:none;">
+          <div class="skeleton-row"><div class="skeleton-shimmer sn"></div><div class="skeleton-shimmer sym"></div><div class="skeleton-shimmer name"></div><div class="skeleton-shimmer marks"></div></div>
+          <div class="skeleton-row"><div class="skeleton-shimmer sn"></div><div class="skeleton-shimmer sym"></div><div class="skeleton-shimmer name"></div><div class="skeleton-shimmer marks"></div></div>
+          <div class="skeleton-row"><div class="skeleton-shimmer sn"></div><div class="skeleton-shimmer sym"></div><div class="skeleton-shimmer name"></div><div class="skeleton-shimmer marks"></div></div>
+          <div class="skeleton-row"><div class="skeleton-shimmer sn"></div><div class="skeleton-shimmer sym"></div><div class="skeleton-shimmer name"></div><div class="skeleton-shimmer marks"></div></div>
+          <div class="skeleton-row"><div class="skeleton-shimmer sn"></div><div class="skeleton-shimmer sym"></div><div class="skeleton-shimmer name"></div><div class="skeleton-shimmer marks"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bottom Navigation (mobile) ── -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a href="#" class="logout-btn" onclick="authService.logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    function toggleSidebar() {
+      var s = document.getElementById('sidebar');
+      if (!s) return;
+      var o = document.getElementById('sidebarOverlay');
+      s.classList.toggle('open');
+      if (o) o.classList.toggle('show', s.classList.contains('open'));
+    }
+    document.getElementById('sidebarOverlay').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('open');
+      this.classList.remove('show');
+    });
+    function toggleAdminTheme() {
+      var d = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('adminTheme', d ? 'dark' : 'light');
+      var i = document.querySelector('.header-btn[onclick*="toggleAdminTheme"] i');
+      if (i) i.className = d ? 'fas fa-sun' : 'fas fa-moon';
+    }
+  </script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/sheets-service.js"></script>
+  <script src="../assets/js/subject-utils.js"></script>
+  <script src="../assets/js/teacher/dashboard.js"></script>
+</body>
+</html>
