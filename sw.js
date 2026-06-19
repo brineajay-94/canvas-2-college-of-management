@@ -15,8 +15,6 @@ var STATIC_RESOURCES = [
   '/admin/roles.html',
   '/admin/results.html',
   '/admin/view-result.html',
-  '/admin/file-manager.html',
-  '/assets/js/admin/file-manager.js',
   '/teacher/index.html',
   '/teacher/profile.html',
   '/assets/css/style.css',
