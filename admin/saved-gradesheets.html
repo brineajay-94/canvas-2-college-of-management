@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Gradesheets - Canvas+2 College of Management</title>
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script>if ((localStorage.getItem('adminTheme') || 'light') === 'dark') document.documentElement.classList.add('dark');</script>
+  <style>
+    .gs { font-family:'Segoe UI',Helvetica,Arial,sans-serif; }
+    .gs table { width:100%; border-collapse:collapse; }
+    .gs table th { background:#f4f6f8; color:#1f2328; padding:10px 16px; font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; text-align:center; border-bottom:2px solid #1a3c6d; }
+    .gs table th:first-child { text-align:left; }
+    .gs table td { padding:10px 16px; border-bottom:1px solid #d8dee4; text-align:center; font-size:14px; }
+    .gs table td:first-child { text-align:left; font-weight:500; color:#1f2328; }
+    .gs table tbody tr:last-child td { border-bottom:1px solid #bac0c8; }
+    .sig-line { width:160px; border-top:2px solid #1a3c6d; margin:0 auto 8px; }
+
+    .saved-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; padding:16px 0; }
+    .saved-card { background:#fff; border:1px solid #d0d7de; border-radius:10px; padding:16px; cursor:pointer; transition:all 0.15s; }
+    .saved-card:hover { border-color:#1a3c6d; box-shadow:0 2px 12px rgba(26,60,109,0.1); }
+    .saved-card-name { font-size:15px; font-weight:700; color:#1f2328; margin-bottom:4px; }
+    .saved-card-date { font-size:12px; color:#656d76; margin-bottom:12px; }
+    .saved-card-actions { display:flex; gap:6px; }
+    .card-edit, .card-print, .card-delete { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; border:1px solid #d0d7de; background:#fff; cursor:pointer; }
+    .card-edit:hover { border-color:#1a3c6d; color:#1a3c6d; }
+    .card-print { background:#1a3c6d; color:#fff; border-color:#1a3c6d; }
+    .card-print:hover { background:#1e4a8a; }
+    .card-delete:hover { border-color:#cf222e; color:#cf222e; }
+    .saved-empty { text-align:center; padding:60px 20px; color:#656d76; }
+
+    .fullscreen-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:#fff; z-index:9999; display:none; flex-direction:column; }
+    .fullscreen-overlay.open { display:flex; }
+    .fullscreen-header { display:flex; justify-content:space-between; align-items:center; padding:8px 16px; border-bottom:1px solid #d0d7de; background:#f8fafc; }
+    .fullscreen-title { font-size:14px; font-weight:600; color:#1f2328; }
+    .fullscreen-close { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid #d0d7de; border-radius:6px; background:#fff; cursor:pointer; font-size:16px; color:#656d76; }
+    .fullscreen-close:hover { background:#f3f4f6; color:#1f2328; }
+    .fullscreen-body { flex:1; display:flex; flex-direction:column; padding:4mm; overflow:auto; }
+    .fullscreen-body .gs { flex:1; display:flex; flex-direction:column; max-width:900px; margin:0 auto; width:100%; background:#fff; }
+    .fullscreen-body .gs .no-print { display:none !important; }
+
+    .edit-toolbar { display:flex; align-items:center; gap:4px; padding:4px 10px; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.12); flex-wrap:wrap; }
+    .edit-tb-group { display:flex; gap:2px; }
+    .edit-tb-btn { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border:1px solid transparent; border-radius:5px; background:transparent; cursor:pointer; font-size:13px; color:#1f2328; }
+    .edit-tb-btn:hover { background:#f3f4f6; border-color:#d0d7de; }
+    .edit-tb-divider { width:1px; height:22px; background:#d0d7de; margin:0 4px; }
+    .edit-tb-done { background:#1a3c6d !important; color:#fff !important; padding:0 12px !important; width:auto !important; border-radius:5px !important; font-size:12px !important; font-weight:600; }
+    .edit-tb-done:hover { background:#1e4a8a !important; }
+
+    .editable-shape { position:absolute; cursor:move; z-index:10; }
+    .editable-shape.shape-selected { outline:2px solid #2563eb; outline-offset:1px; }
+    .shape-handle { position:absolute; width:10px; height:10px; background:#fff; border:2px solid #2563eb; border-radius:2px; z-index:11; }
+    .shape-handle.nw { top:-6px; left:-6px; cursor:nw-resize; }
+    .shape-handle.n { top:-6px; left:50%; margin-left:-5px; cursor:n-resize; }
+    .shape-handle.ne { top:-6px; right:-6px; cursor:ne-resize; }
+    .shape-handle.e { top:50%; right:-6px; margin-top:-5px; cursor:e-resize; }
+    .shape-handle.se { bottom:-6px; right:-6px; cursor:se-resize; }
+    .shape-handle.s { bottom:-6px; left:50%; margin-left:-5px; cursor:s-resize; }
+    .shape-handle.sw { bottom:-6px; left:-6px; cursor:sw-resize; }
+    .shape-handle.w { top:50%; left:-6px; margin-top:-5px; cursor:w-resize; }
+
+    .edit-mode .gs * { cursor:text; }
+    .edit-mode .gs table td, .edit-mode .gs table th { cursor:text; }
+    .edit-mode .editable-shape { cursor:move !important; }
+    .edit-mode .editable-shape * { cursor:move !important; }
+    .edit-mode .editable-shape .shape-handle { cursor:inherit !important; }
+
+    .watermark-logo { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-20deg); width:220px; height:220px; opacity:0.04; pointer-events:none; z-index:9; object-fit:contain; }
+
+    @media print {
+      body { background:#fff !important; margin:0 !important; padding:0 !important; }
+      .sidebar, .admin-header, .fullscreen-header, .edit-toolbar { display:none !important; }
+      .main-content { margin:0 !important; padding:0 !important; }
+      .page-content { padding:0 !important; max-width:100% !important; }
+      .fullscreen-overlay { position:static !important; display:flex !important; }
+      .fullscreen-body { padding:0 !important; }
+      .fullscreen-body .gs { padding:4mm 4mm 6mm !important; }
+      .watermark-logo { display:block !important; }
+      @page { size:A4; margin:8mm; }
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><img src="../assets/images/logo.png" alt="Canvas+2"></div>
+      <div class="sidebar-logo-text">
+        <span>Canvas+2 College of Management</span>
+        <small>Admin Panel</small>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="users.html" class="sidebar-link"><i class="fas fa-users"></i> Users</a>
+      <a href="team.html" class="sidebar-link"><i class="fas fa-user-friends"></i> Team</a>
+      <a href="slider.html" class="sidebar-link"><i class="fas fa-images"></i> Slider</a>
+      <a href="sheet.html" class="sidebar-link"><i class="fas fa-file-alt"></i> Sheet</a>
+      <span class="sidebar-nav-label">Results</span>
+      <a href="view-result.html" class="sidebar-link"><i class="fas fa-file-invoice"></i> View Result</a>
+      <a href="saved-gradesheets.html" class="sidebar-link active"><i class="fas fa-save"></i> Saved</a>
+    </nav>
+    <a href="../index.html" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Visit Website</a>
+    <div class="sidebar-footer">
+      <button class="sidebar-link" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="header-btn mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h1>Saved Gradesheets</h1>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="toggleAdminTheme()" title="Toggle theme"><i class="fas fa-moon"></i></button>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title"><i class="fas fa-save"></i> Saved Gradesheets</span>
+        </div>
+        <div class="panel-body">
+          <div class="saved-empty" id="savedEmpty"><i class="fas fa-inbox" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px;"></i>No saved gradesheets yet.<br><span style="font-size:12px;">Search a result on <a href="view-result.html" style="color:#1a3c6d;">View Result</a> page and use <strong>Save As</strong>.</span></div>
+          <div class="saved-grid" id="savedGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fullscreen-overlay" id="fullscreenOverlay">
+    <div class="fullscreen-header">
+      <div class="fullscreen-title" id="fullscreenTitle">Gradesheet</div>
+      <div>
+        <button class="edit-tb-btn" onclick="fullscreenPrint()" title="Print" style="display:inline-flex;margin-right:6px;"><i class="fas fa-print"></i></button>
+        <button class="fullscreen-close" onclick="closeFullscreen()" title="Close">&times;</button>
+      </div>
+    </div>
+    <div class="fullscreen-body" id="fullscreenBody"></div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+    function toggleSidebar() { document.body.classList.toggle('sidebar-collapsed'); }
+
+    var _gsData = null, _selectedShape = null, _dragData = null, _editMode = false;
+
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function showToast(msg, type) {
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div'); t.className = 'toast toast-' + (type||'info');
+      t.innerHTML = msg; c.appendChild(t);
+      setTimeout(function(){ t.remove(); }, 3000);
+    }
+
+    function loadSaved() {
+      var grid = document.getElementById('savedGrid');
+      var empty = document.getElementById('savedEmpty');
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      if (!saved.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = saved.slice().reverse().map(function(s){
+        var d = new Date(s.date);
+        var ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        return '<div class="saved-card">' +
+          '<div class="saved-card-name">' + escHtml(s.name) + '</div>' +
+          '<div class="saved-card-date">' + ds + '</div>' +
+          '<div class="saved-card-actions">' +
+          '<button class="card-edit" onclick="event.stopPropagation();openFullscreen(\'' + escHtml(s.name) + '\')"><i class="fas fa-eye"></i> View</button>' +
+          '<button class="card-print" onclick="event.stopPropagation();printSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-print"></i> Print</button>' +
+          '<button class="card-delete" onclick="event.stopPropagation();deleteSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-trash"></i></button>' +
+          '</div></div>';
+      }).join('');
+      grid.querySelectorAll('.saved-card').forEach(function(card, i){
+        var name = saved.slice().reverse()[i].name;
+        card.addEventListener('click', function(){ openFullscreen(name); });
+      });
+    }
+
+    function printSaved(name) {
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var item = saved.find(function(s){ return s.name === name; });
+      if (!item) return;
+      var win = window.open('', '_blank');
+      win.document.write('<!DOCTYPE html><html><head><style>' +
+        'body{margin:0;padding:0;background:#fff;display:flex;flex-direction:column;min-height:100vh;}' +
+        '.gs{font-family:Segoe UI,Helvetica,Arial,sans-serif;flex:1;display:flex;flex-direction:column;padding:4mm 4mm 6mm;}' +
+        '.gs table{width:100%;border-collapse:collapse;}' +
+        '.gs table th{background:#f4f6f8;color:#1f2328;padding:10px 16px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;text-align:center;border-bottom:2px solid #1a3c6d;}' +
+        '.gs table th:first-child{text-align:left;}' +
+        '.gs table td{padding:10px 16px;border-bottom:1px solid #d8dee4;text-align:center;font-size:14px;}' +
+        '.gs table td:first-child{text-align:left;font-weight:500;color:#1f2328;}' +
+        '.sig-line{width:160px;border-top:2px solid #1a3c6d;margin:0 auto 8px;}' +
+        '.watermark-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-20deg);width:220px;height:220px;opacity:0.04;pointer-events:none;z-index:9;object-fit:contain;}' +
+        '.no-print{display:none!important;}' +
+        '@media print{@page{size:A4;margin:8mm;}}' +
+        '</style></head><body>' + item.html + '<script>window.onload=function(){window.print();window.close();}<\/script></body></html>');
+      win.document.close();
+    }
+
+    function deleteSaved(name) {
+      if (!confirm('Delete "' + name + '"?')) return;
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      saved = saved.filter(function(s){ return s.name !== name; });
+      localStorage.setItem('savedGradesheets', JSON.stringify(saved));
+      loadSaved();
+    }
+
+    function openFullscreen(name) {
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var item = saved.find(function(s){ return s.name === name; });
+      if (!item) { showToast('Not found.', 'error'); return; }
+      _gsData = name;
+      document.getElementById('fullscreenTitle').textContent = name;
+      var body = document.getElementById('fullscreenBody');
+      body.innerHTML = item.html;
+      addWatermark(body.querySelector('.gs'));
+      document.getElementById('fullscreenOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeFullscreen() {
+      removeWatermark(document.querySelector('#fullscreenBody .gs'));
+      document.getElementById('fullscreenOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('fullscreenBody').innerHTML = '';
+    }
+
+    function fullscreenPrint() {
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (!gs) return;
+      addWatermark(gs);
+      setTimeout(function(){ window.print(); setTimeout(function(){ removeWatermark(gs); }, 300); }, 100);
+    }
+
+    function addWatermark(card) {
+      if (!card || card.querySelector('.watermark-logo')) return;
+      var wm = document.createElement('img');
+      wm.className = 'watermark-logo';
+      wm.src = '../assets/images/logo.png';
+      wm.alt = '';
+      card.style.position = 'relative';
+      card.insertBefore(wm, card.firstChild);
+    }
+
+    function removeWatermark(card) {
+      if (!card) return;
+      var wm = card.querySelector('.watermark-logo');
+      if (wm) wm.remove();
+    }
+
+    function toggleSidebar() { document.body.classList.toggle('sidebar-collapsed'); }
+    function handleLogout() { if (window.firebase) { firebase.auth().signOut(); window.location.href = 'index.html'; } }
+    function toggleAdminTheme() {
+      var d = document.documentElement;
+      var cur = d.classList.contains('dark') ? 'dark' : 'light';
+      var next = cur === 'dark' ? 'light' : 'dark';
+      d.classList.remove(cur); d.classList.add(next);
+      localStorage.setItem('adminTheme', next);
+      document.querySelector('.admin-header .fa-moon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSaved);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('fullscreenOverlay').classList.contains('open')) closeFullscreen();
+    });
+  </script>
+</body>
+</html>
