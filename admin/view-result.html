@@ -251,12 +251,12 @@
 
     function printGradesheet() {
       if (!document.querySelector('#resultDisplay .gs')) return;
-      showClassModal('print');
+      doPrint(null);
     }
 
     function downloadResult(format) {
       if (!document.querySelector('#resultDisplay .gs')) return;
-      showClassModal(format);
+      doDownload(format, null);
     }
 
     function gradeColor(g) {
@@ -278,7 +278,7 @@
       h.push('<div style="font-size:15px;font-weight:700;color:#1a3c6d;letter-spacing:1px;text-transform:uppercase;">Statement of Grades</div>');
       h.push('<div style="display:flex;gap:12px;font-size:14px;color:#1f2328;">');
       if (cls) h.push('<span><span style="font-weight:600;">Class:</span> ' + cls + '</span>');
-      else if (sheetName) h.push('<span><span style="font-weight:600;">Exam:</span> ' + sheetName + '</span>');
+      else h.push('<span><span style="font-weight:600;">Class:</span> ---</span>');
       h.push('</div></div>');
 
       h.push('<div style="display:flex;justify-content:space-between;padding:10px 32px;border-bottom:1px solid #d0d7de;font-size:14px;">');
