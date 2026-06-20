@@ -187,8 +187,9 @@
       var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
       var item = saved.find(function(s){ return s.name === name; });
       if (!item) return;
+      var lt = '\x3C', gt = '\x3E';
       var win = window.open('', '_blank');
-      var html = '<!DOCTYPE html><html><head><style>' +
+      var html = lt + '!DOCTYPE html' + gt + lt + 'html' + gt + lt + 'head' + gt + lt + 'style' + gt +
         'body{margin:0;padding:0;background:#fff;display:flex;flex-direction:column;min-height:100vh;}' +
         '.gs{font-family:Segoe UI,Helvetica,Arial,sans-serif;flex:1;display:flex;flex-direction:column;padding:4mm 4mm 6mm;}' +
         '.gs table{width:100%;border-collapse:collapse;}' +
@@ -200,7 +201,7 @@
         '.watermark-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-20deg);width:220px;height:220px;opacity:0.04;pointer-events:none;z-index:9;object-fit:contain;}' +
         '.no-print{display:none!important;}' +
         '@media print{@page{size:A4;margin:8mm;}}' +
-        '</style></head><body>' + item.html + '</body></html>';
+        lt + '/style' + gt + lt + '/head' + gt + lt + 'body' + gt + item.html + lt + '/body' + gt + lt + '/html' + gt;
       win.document.write(html);
       win.document.close();
       win.print();
