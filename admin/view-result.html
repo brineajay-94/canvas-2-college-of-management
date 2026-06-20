@@ -43,9 +43,9 @@
         box-sizing:border-box !important;
         -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
-      .page-content { flex:1 !important; display:flex !important; flex-direction:column !important; padding:0 !important; max-width:100% !important; }
-      #resultDisplay { flex:1 !important; display:flex !important; flex-direction:column !important; margin:0 !important; padding:0 !important; }
-      #resultDisplay .gs { flex:1 !important; display:flex !important; flex-direction:column !important; padding:6mm 2mm 8mm !important; }
+      .page-content { padding:0 !important; max-width:100% !important; }
+      #resultDisplay { margin:0 !important; padding:0 !important; }
+      #resultDisplay .gs { padding:0 !important; }
       .watermark-logo { display:block !important; }
       @page { size:A4; margin:0; }
     }
@@ -241,7 +241,7 @@
     function buildGradesheet(symbol, studentName, subjectRows, gpa, grade, sheetName, cls) {
       var isNg = grade === 'NG';
       var h = [];
-      h.push('<div class="gs" style="max-width:780px;margin:0 auto;background:#fff;border:1px solid #bac0c8;position:relative;display:flex;flex-direction:column;height:100%;">');
+      h.push('<div class="gs" style="max-width:780px;margin:0 auto;background:#fff;border:1px solid #bac0c8;position:relative;">');
 
       h.push('<div style="display:flex;align-items:center;gap:14px;padding:14px 24px 8px;border-bottom:1px solid #d0d7de;">');
       h.push('<img src="../assets/images/logo.png" alt="" style="width:40px;height:40px;object-fit:contain;border:1px solid #d0d7de;padding:3px;">');
@@ -261,14 +261,12 @@
       h.push('</div>');
 
       if (subjectRows.length) {
-        h.push('<div style="flex:1;">');
         h.push('<table><thead><tr><th style="font-size:11px;">Subject</th><th style="width:65px;font-size:11px;">Grade</th><th style="width:75px;font-size:11px;">Grade Point</th></tr></thead><tbody>');
         subjectRows.forEach(function(row){
           var gp = row.grade === 'A+' ? 4.0 : row.grade === 'A' ? 3.6 : row.grade === 'B+' ? 3.2 : row.grade === 'C+' ? 2.8 : row.grade === 'C' ? 2.4 : row.grade === 'D+' ? 2.0 : row.grade === 'D' ? 1.6 : 0.0;
           h.push('<tr><td style="font-size:11px;padding:5px 14px;">' + row.label + '</td><td style="font-weight:700;color:' + gradeColor(row.grade) + ';font-size:11px;padding:5px;">' + row.grade + '</td><td style="font-weight:600;font-size:11px;padding:5px;">' + (row.grade === 'NG' ? '0.0' : gp.toFixed(1)) + '</td></tr>');
         });
         h.push('</tbody></table>');
-        h.push('</div>');
       }
 
       h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 24px;border-top:2px solid #1a3c6d;border-bottom:1px solid #d0d7de;">');
