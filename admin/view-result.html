@@ -123,33 +123,33 @@
 
     <div class="page-content">
       <div id="searchView">
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title"><i class="fas fa-search"></i> Search Student Result</span>
-        </div>
-        <div class="panel-body">
-          <div style="max-width:520px;margin:0 auto;">
-            <div class="form-group">
-              <label for="resultSheet"><i class="fas fa-file-alt"></i> Select Result Sheet</label>
-              <select id="resultSheet" class="form-control">
-                <option value="">-- Select Result Sheet --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="symbolNumber"><i class="fas fa-hashtag"></i> Symbol Number</label>
-              <div style="display:flex;gap:8px;">
-                <input type="text" id="symbolNumber" class="form-control" placeholder="Enter symbol number" autocomplete="off" style="flex:1;" onkeydown="if(event.key==='Enter')searchResult()">
-                <button class="btn btn-primary" onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><i class="fas fa-search"></i> Search Student Result</span>
+          </div>
+          <div class="panel-body">
+            <div style="max-width:520px;margin:0 auto;">
+              <div class="form-group">
+                <label for="resultSheet"><i class="fas fa-file-alt"></i> Select Result Sheet</label>
+                <select id="resultSheet" class="form-control">
+                  <option value="">-- Select Result Sheet --</option>
+                </select>
               </div>
+              <div class="form-group">
+                <label for="symbolNumber"><i class="fas fa-hashtag"></i> Symbol Number</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="symbolNumber" class="form-control" placeholder="Enter symbol number" autocomplete="off" style="flex:1;" onkeydown="if(event.key==='Enter')searchResult()">
+                  <button class="btn btn-primary" onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
+                </div>
+              </div>
+              <div id="searchStatus" style="font-size:13px;color:var(--color-fg-muted);"></div>
             </div>
-            <div id="searchStatus" style="font-size:13px;color:var(--color-fg-muted);"></div>
           </div>
         </div>
       </div>
 
       <div id="resultDisplay"></div>
     </div>
-  </div>
 
   <div class="save-dialog-overlay" id="saveDialog">
     <div class="save-dialog">
