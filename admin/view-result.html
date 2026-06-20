@@ -37,24 +37,23 @@
       .sidebar-overlay, #toastContainer, .mobile-toggle, .modal-overlay, .no-print { display:none !important; }
       .main-content {
         margin-left:0 !important; padding:0 !important; width:100% !important;
-        min-height:100vh !important; box-sizing:border-box !important;
+        height:100vh !important; box-sizing:border-box !important;
         border:6px solid #1a3c6d !important;
         outline:2px solid #b0b8c4 !important;
         outline-offset:-8px !important;
         -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
-      .page-content { padding:0 !important; max-width:100% !important; }
+      .page-content { padding:0 !important; max-width:100% !important; height:100% !important; }
       #resultDisplay {
         display:block !important; margin:0 !important; padding:0 !important;
+        height:100% !important;
       }
       #resultDisplay .gs {
         width:100% !important; max-width:none !important; margin:0 !important;
-        min-height:100vh !important; box-sizing:border-box !important;
+        height:100% !important; box-sizing:border-box !important;
         display:flex !important; flex-direction:column !important;
         padding-bottom:35mm !important;
-        border:none !important; border-radius:0 !important; box-shadow:none !important;
-        page-break-inside:avoid !important;
-        -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+        border:none !important; border-radius:0 !important;
       }
       #resultDisplay .gs-content { flex:1 !important; }
       .watermark-logo { display:block !important; }
