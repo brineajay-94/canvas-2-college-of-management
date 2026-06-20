@@ -18,17 +18,22 @@
     .gs table tbody tr:last-child td { border-bottom:1px solid #bac0c8; }
     .sig-line { width:160px; border-top:2px solid #1a3c6d; margin:0 auto 8px; }
 
-    .saved-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; padding:16px 0; }
+    .saved-search { margin-bottom:12px; }
+    .saved-search input { width:100%; padding:10px 14px; border:1px solid #d0d7de; border-radius:8px; font-size:14px; box-sizing:border-box; background:#f8fafc; transition:all 0.15s; }
+    .saved-search input:focus { outline:none; border-color:#1a3c6d; background:#fff; }
+
+    .saved-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; padding:8px 0; }
     .saved-card { background:#fff; border:1px solid #d0d7de; border-radius:10px; padding:16px; cursor:pointer; transition:all 0.15s; }
     .saved-card:hover { border-color:#1a3c6d; box-shadow:0 2px 12px rgba(26,60,109,0.1); }
     .saved-card-name { font-size:15px; font-weight:700; color:#1f2328; margin-bottom:4px; }
-    .saved-card-date { font-size:12px; color:#656d76; margin-bottom:12px; }
+    .saved-card-meta { font-size:12px; color:#656d76; margin-bottom:10px; line-height:1.6; }
+    .saved-card-meta span { display:inline-block; background:#f4f6f8; padding:1px 8px; border-radius:4px; margin-right:4px; }
     .saved-card-actions { display:flex; gap:6px; }
-    .card-edit, .card-print, .card-delete { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; border:1px solid #d0d7de; background:#fff; cursor:pointer; }
-    .card-edit:hover { border-color:#1a3c6d; color:#1a3c6d; }
-    .card-print { background:#1a3c6d; color:#fff; border-color:#1a3c6d; }
-    .card-print:hover { background:#1e4a8a; }
-    .card-delete:hover { border-color:#cf222e; color:#cf222e; }
+    .card-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; border:1px solid #d0d7de; background:#fff; cursor:pointer; }
+    .card-btn:hover { border-color:#1a3c6d; color:#1a3c6d; }
+    .card-btn.primary { background:#1a3c6d; color:#fff; border-color:#1a3c6d; }
+    .card-btn.primary:hover { background:#1e4a8a; }
+    .card-btn.danger:hover { border-color:#cf222e; color:#cf222e; }
     .saved-empty { text-align:center; padding:60px 20px; color:#656d76; }
 
     .fullscreen-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:#fff; z-index:9999; display:none; flex-direction:column; }
@@ -124,6 +129,7 @@
           <span class="panel-title"><i class="fas fa-save"></i> Saved Gradesheets</span>
         </div>
         <div class="panel-body">
+          <div class="saved-search"><input type="text" id="searchInput" placeholder="Search by name, symbol number, or student name..." oninput="filterSaved()" autocomplete="off"></div>
           <div class="saved-empty" id="savedEmpty"><i class="fas fa-inbox" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px;"></i>No saved gradesheets yet.<br><span style="font-size:12px;">Search a result on <a href="view-result.html" style="color:#1a3c6d;">View Result</a> page and use <strong>Save As</strong>.</span></div>
           <div class="saved-grid" id="savedGrid"></div>
         </div>
@@ -134,8 +140,19 @@
   <div class="fullscreen-overlay" id="fullscreenOverlay">
     <div class="fullscreen-header">
       <div class="fullscreen-title" id="fullscreenTitle">Gradesheet</div>
-      <div>
-        <button class="edit-tb-btn" onclick="fullscreenPrint()" title="Print" style="display:inline-flex;margin-right:6px;"><i class="fas fa-print"></i></button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div id="fsEditToolbar" style="display:none;">
+          <div class="edit-toolbar" style="padding:2px 8px;">
+            <div class="edit-tb-group"><button class="edit-tb-btn" onclick="fsExecCmd('bold')" title="Bold"><b>B</b></button><button class="edit-tb-btn" onclick="fsExecCmd('italic')" title="Italic"><i>I</i></button><button class="edit-tb-btn" onclick="fsExecCmd('underline')" title="Underline"><u>U</u></button></div>
+            <div class="edit-tb-divider"></div>
+            <div class="edit-tb-group"><button class="edit-tb-btn" onclick="fsAddShape('rect')" title="Rectangle">▬</button><button class="edit-tb-btn" onclick="fsAddShape('circle')" title="Circle">●</button><button class="edit-tb-btn" onclick="fsAddShape('line')" title="Line">╱</button><button class="edit-tb-btn" onclick="fsAddShape('text')" title="Text Box">T</button></div>
+            <div class="edit-tb-divider"></div>
+            <div class="edit-tb-group"><button class="edit-tb-btn" onclick="fsDeleteShape()" title="Delete" style="color:#cf222e;">✕</button></div>
+          </div>
+        </div>
+        <button class="card-btn" id="fsEditBtn" onclick="fsToggleEdit()" style="display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-edit"></i> Edit</button>
+        <button class="card-btn primary" id="fsSaveBtn" onclick="fsSaveEdits()" style="display:none;align-items:center;gap:4px;"><i class="fas fa-check"></i> Save</button>
+        <button class="edit-tb-btn" onclick="fullscreenPrint()" title="Print" style="display:inline-flex;margin:0;"><i class="fas fa-print"></i></button>
         <button class="fullscreen-close" onclick="closeFullscreen()" title="Close">&times;</button>
       </div>
     </div>
@@ -145,9 +162,7 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <script>
-    function toggleSidebar() { document.body.classList.toggle('sidebar-collapsed'); }
-
-    var _gsData = null, _selectedShape = null, _dragData = null, _editMode = false;
+    var _gsData = null, _selectedShape = null, _dragData = null, _fsEditMode = false;
 
     function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -158,22 +173,30 @@
       setTimeout(function(){ t.remove(); }, 3000);
     }
 
-    function loadSaved() {
+    function getSaved() { return JSON.parse(localStorage.getItem('savedGradesheets') || '[]'); }
+    function putSaved(a) { localStorage.setItem('savedGradesheets', JSON.stringify(a)); }
+
+    function loadSaved(q) {
       var grid = document.getElementById('savedGrid');
       var empty = document.getElementById('savedEmpty');
-      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var saved = getSaved();
       if (!saved.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
       empty.style.display = 'none';
+      if (q) saved = saved.filter(function(s){ return s.name.toLowerCase().indexOf(q) >= 0 || (s.html || '').toLowerCase().indexOf(q) >= 0; });
+      if (!saved.length) { grid.innerHTML = '<div class="saved-empty" style="display:block;padding:30px 20px;">No matches found.</div>'; return; }
       grid.innerHTML = saved.slice().reverse().map(function(s){
         var d = new Date(s.date);
         var ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        var sym = s.symbol || '', nm = s.studentName || '';
+        if (!sym) { var m = s.html.match(/Symbol No:<\/span>\s*([^<]+)/); if (m) sym = m[1].trim(); }
+        if (!nm) { var m2 = s.html.match(/Student Name:<\/span>\s*([^<]+)/); if (m2) nm = m2[1].trim(); }
         return '<div class="saved-card">' +
           '<div class="saved-card-name">' + escHtml(s.name) + '</div>' +
-          '<div class="saved-card-date">' + ds + '</div>' +
+          '<div class="saved-card-meta">' + (sym ? '<span>' + escHtml(sym) + '</span> ' : '') + (nm ? '<span>' + escHtml(nm) + '</span>' : '') + '<br>' + ds + '</div>' +
           '<div class="saved-card-actions">' +
-          '<button class="card-edit" onclick="event.stopPropagation();openFullscreen(\'' + escHtml(s.name) + '\')"><i class="fas fa-eye"></i> View</button>' +
-          '<button class="card-print" onclick="event.stopPropagation();printSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-print"></i> Print</button>' +
-          '<button class="card-delete" onclick="event.stopPropagation();deleteSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-trash"></i></button>' +
+          '<button class="card-btn" onclick="event.stopPropagation();openFullscreen(\'' + escHtml(s.name) + '\')"><i class="fas fa-eye"></i> View</button>' +
+          '<button class="card-btn primary" onclick="event.stopPropagation();printSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-print"></i> Print</button>' +
+          '<button class="card-btn danger" onclick="event.stopPropagation();deleteSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-trash"></i></button>' +
           '</div></div>';
       }).join('');
       grid.querySelectorAll('.saved-card').forEach(function(card, i){
@@ -182,8 +205,15 @@
       });
     }
 
+    function filterSaved() {
+      var q = document.getElementById('searchInput').value.trim().toLowerCase();
+      loadSaved(q);
+    }
+
+    /* ── Print / Delete / Fullscreen ── */
+
     function printSaved(name) {
-      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var saved = getSaved();
       var item = saved.find(function(s){ return s.name === name; });
       if (!item) return;
       var lt = '\x3C', gt = '\x3E';
@@ -208,14 +238,14 @@
 
     function deleteSaved(name) {
       if (!confirm('Delete "' + name + '"?')) return;
-      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var saved = getSaved();
       saved = saved.filter(function(s){ return s.name !== name; });
-      localStorage.setItem('savedGradesheets', JSON.stringify(saved));
-      loadSaved();
+      putSaved(saved);
+      loadSaved(document.getElementById('searchInput').value.trim().toLowerCase());
     }
 
     function openFullscreen(name) {
-      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var saved = getSaved();
       var item = saved.find(function(s){ return s.name === name; });
       if (!item) { showToast('Not found.', 'error'); return; }
       _gsData = name;
@@ -225,21 +255,185 @@
       addWatermark(body.querySelector('.gs'));
       document.getElementById('fullscreenOverlay').classList.add('open');
       document.body.style.overflow = 'hidden';
+      resetFsEdit();
     }
 
     function closeFullscreen() {
+      if (_fsEditMode) fsToggleEdit();
       removeWatermark(document.querySelector('#fullscreenBody .gs'));
       document.getElementById('fullscreenOverlay').classList.remove('open');
       document.body.style.overflow = '';
       document.getElementById('fullscreenBody').innerHTML = '';
+      _gsData = null;
     }
 
     function fullscreenPrint() {
       var gs = document.querySelector('#fullscreenBody .gs');
       if (!gs) return;
+      if (_fsEditMode) fsToggleEdit();
       addWatermark(gs);
       setTimeout(function(){ window.print(); setTimeout(function(){ removeWatermark(gs); }, 300); }, 100);
     }
+
+    /* ── Edit in Fullscreen ── */
+
+    function resetFsEdit() {
+      _fsEditMode = false;
+      _selectedShape = null;
+      _dragData = null;
+      document.getElementById('fsEditBtn').style.display = 'inline-flex';
+      document.getElementById('fsSaveBtn').style.display = 'none';
+      document.getElementById('fsEditToolbar').style.display = 'none';
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (gs) gs.contentEditable = 'false';
+      document.getElementById('fullscreenBody').classList.remove('edit-mode');
+      document.removeEventListener('mousemove', fsDragMove);
+      document.removeEventListener('mouseup', fsDragEnd);
+    }
+
+    function fsToggleEdit() {
+      _fsEditMode = !_fsEditMode;
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (!gs) return;
+      if (_fsEditMode) {
+        gs.contentEditable = 'true';
+        document.getElementById('fsEditBtn').style.display = 'none';
+        document.getElementById('fsSaveBtn').style.display = 'inline-flex';
+        document.getElementById('fsEditToolbar').style.display = '';
+        document.getElementById('fullscreenBody').classList.add('edit-mode');
+      } else {
+        gs.contentEditable = 'false';
+        document.getElementById('fsEditBtn').style.display = 'inline-flex';
+        document.getElementById('fsSaveBtn').style.display = 'none';
+        document.getElementById('fsEditToolbar').style.display = 'none';
+        document.getElementById('fullscreenBody').classList.remove('edit-mode');
+        deselectFsShape();
+      }
+    }
+
+    function fsSaveEdits() {
+      if (!_gsData) return;
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (!gs) return;
+      var saved = getSaved();
+      var idx = saved.findIndex(function(s){ return s.name === _gsData; });
+      if (idx < 0) { showToast('Not found.', 'error'); return; }
+      saved[idx].html = gs.outerHTML;
+      saved[idx].date = new Date().toISOString();
+      putSaved(saved);
+      showToast('Saved!', 'success');
+      fsToggleEdit();
+    }
+
+    function fsExecCmd(cmd) {
+      document.execCommand(cmd, false, null);
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (gs) gs.focus();
+    }
+
+    function selectFsShape(el) {
+      deselectFsShape();
+      _selectedShape = el;
+      if (el) el.classList.add('shape-selected');
+    }
+
+    function deselectFsShape() {
+      if (_selectedShape) { _selectedShape.classList.remove('shape-selected'); _selectedShape = null; }
+    }
+
+    function fsAddShape(type) {
+      var gs = document.querySelector('#fullscreenBody .gs');
+      if (!gs) return;
+      var el = document.createElement('div');
+      el.className = 'editable-shape';
+      el.style.cssText = 'position:absolute;z-index:10;';
+      if (type === 'rect') {
+        el.style.cssText += 'border:2px solid #1a3c6d;background:rgba(26,60,109,0.08);border-radius:2px;width:100px;height:60px;top:120px;left:60px;';
+      } else if (type === 'circle') {
+        el.style.cssText += 'border:2px solid #1a3c6d;background:rgba(26,60,109,0.08);width:80px;height:80px;border-radius:50%;top:120px;left:60px;';
+      } else if (type === 'line') {
+        el.style.cssText += 'border-top:2px solid #1a3c6d;width:140px;height:0;top:140px;left:60px;';
+      } else if (type === 'text') {
+        el.style.cssText += 'min-width:80px;min-height:28px;top:120px;left:60px;font-size:14px;color:#1f2328;padding:4px;background:transparent;';
+        el.contentEditable = 'true';
+        el.textContent = 'Text';
+      }
+      ['nw','n','ne','e','se','s','sw','w'].forEach(function(d){
+        var h = document.createElement('div');
+        h.className = 'shape-handle ' + d;
+        el.appendChild(h);
+      });
+      el.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('shape-handle')) return;
+        e.preventDefault();
+        selectFsShape(el);
+        fsStartDrag(el, e);
+      });
+      el.querySelectorAll('.shape-handle').forEach(function(h) {
+        var dir = Array.from(h.classList).filter(function(c){ return /^[nsew]+$/.test(c); })[0];
+        if (!dir) return;
+        h.addEventListener('mousedown', function(e) {
+          e.stopPropagation(); e.preventDefault();
+          selectFsShape(el);
+          fsStartResize(el, dir, e);
+        });
+      });
+      gs.appendChild(el);
+      selectFsShape(el);
+    }
+
+    function fsDeleteShape() {
+      if (!_selectedShape) { showToast('Select a shape first.', 'info'); return; }
+      _selectedShape.parentNode.removeChild(_selectedShape);
+      _selectedShape = null;
+    }
+
+    function fsStartDrag(el, e) {
+      _dragData = { el: el, type: 'move', sx: e.clientX, sy: e.clientY, l: px(el.style.left), t: px(el.style.top) };
+      document.addEventListener('mousemove', fsDragMove);
+      document.addEventListener('mouseup', fsDragEnd);
+    }
+
+    function fsStartResize(el, dir, e) {
+      el.style.cursor = dir + '-resize';
+      el.querySelectorAll('.shape-handle').forEach(function(h){ h.style.display='none'; });
+      _dragData = {
+        el: el, type: 'resize', dir: dir,
+        sx: e.clientX, sy: e.clientY,
+        l: el.offsetLeft, t: el.offsetTop,
+        w: el.offsetWidth, h: el.offsetHeight
+      };
+      document.addEventListener('mousemove', fsDragMove);
+      document.addEventListener('mouseup', fsDragEnd);
+    }
+
+    function fsDragMove(e) {
+      if (!_dragData) return;
+      var d = _dragData, dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+      if (d.type === 'move') {
+        d.el.style.left = (d.l + dx) + 'px';
+        d.el.style.top = (d.t + dy) + 'px';
+      } else if (d.type === 'resize') {
+        if (d.dir.indexOf('e') >= 0) d.el.style.width = Math.max(20, d.w + dx) + 'px';
+        if (d.dir.indexOf('w') >= 0) { d.el.style.width = Math.max(20, d.w - dx) + 'px'; d.el.style.left = (d.l + dx) + 'px'; }
+        if (d.dir.indexOf('s') >= 0) d.el.style.height = Math.max(20, d.h + dy) + 'px';
+        if (d.dir.indexOf('n') >= 0) { d.el.style.height = Math.max(20, d.h - dy) + 'px'; d.el.style.top = (d.t + dy) + 'px'; }
+      }
+    }
+
+    function fsDragEnd() {
+      if (_dragData && _dragData.type === 'resize' && _dragData.el) {
+        _dragData.el.style.cursor = '';
+        _dragData.el.querySelectorAll('.shape-handle').forEach(function(h){ h.style.display=''; });
+      }
+      _dragData = null;
+      document.removeEventListener('mousemove', fsDragMove);
+      document.removeEventListener('mouseup', fsDragEnd);
+    }
+
+    function px(v) { return parseInt(v) || 0; }
+
+    /* ── Watermark ── */
 
     function addWatermark(card) {
       if (!card || card.querySelector('.watermark-logo')) return;
@@ -268,9 +462,10 @@
       document.querySelector('.admin-header .fa-moon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
 
-    document.addEventListener('DOMContentLoaded', loadSaved);
+    document.addEventListener('DOMContentLoaded', function(){ loadSaved(); });
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && document.getElementById('fullscreenOverlay').classList.contains('open')) closeFullscreen();
+      if (e.key === 'Delete' && _fsEditMode && _selectedShape) { e.preventDefault(); fsDeleteShape(); }
     });
   </script>
 </body>

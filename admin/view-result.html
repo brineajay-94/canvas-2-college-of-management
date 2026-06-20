@@ -682,9 +682,15 @@
       if (!name) { showToast('Enter a name.', 'info'); return; }
       var gs = document.querySelector('#resultDisplay .gs');
       if (!gs) { showToast('No gradesheet to save.', 'error'); return; }
+      var symbol = '', studentName = '';
+      var text = gs.innerHTML;
+      var m = text.match(/Symbol No:<\/span>\s*([^<]+)/);
+      if (m) symbol = m[1].trim();
+      var m2 = text.match(/Student Name:<\/span>\s*([^<]+)/);
+      if (m2) studentName = m2[1].trim();
       var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
       saved = saved.filter(function(s){ return s.name !== name; });
-      saved.push({ name: name, html: gs.outerHTML, date: new Date().toISOString() });
+      saved.push({ name: name, html: gs.outerHTML, date: new Date().toISOString(), symbol: symbol, studentName: studentName });
       localStorage.setItem('savedGradesheets', JSON.stringify(saved));
       closeSaveDialog();
       showToast('Gradesheet "' + name + '" saved!', 'success');
