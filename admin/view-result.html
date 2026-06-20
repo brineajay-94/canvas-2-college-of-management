@@ -25,21 +25,27 @@
     }
 
     @media print {
-      body { background:#fff !important; }
+      body { background:#fff !important; margin:0 !important; padding:0 !important; }
       body.admin-body { display:block !important; }
       .sidebar, .admin-header, .page-content > .panel:first-child, .print-btn-bar, .btn, .toast-container,
       .sidebar-overlay, #toastContainer, .mobile-toggle { display:none !important; }
       .main-content { margin-left:0 !important; padding:0 !important; width:100% !important; }
       .page-content { padding:0 !important; max-width:100% !important; }
-      #resultDisplay { display:block !important; margin:0 auto !important; }
+      #resultDisplay { display:flex !important; align-items:center !important; justify-content:center !important; min-height:100vh !important; margin:0 !important; padding:10mm !important; box-sizing:border-box !important; }
       #resultDisplay .result-card {
+        width:100% !important;
+        max-width:780px !important;
+        margin:0 auto !important;
         box-shadow:0 0 0 3px #1a3c6d, 0 0 0 6px #b0b8c4 !important;
         border:none !important;
         border-radius:0 !important;
         page-break-inside:avoid !important;
+        -webkit-print-color-adjust:exact !important;
+        print-color-adjust:exact !important;
       }
       #resultDisplay .watermark-text { display:block !important; }
-      @page { size:A4; margin:14mm; }
+      #resultDisplay .card-header-bg { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+      @page { size:A4; margin:0; }
     }
   </style>
 </head>
@@ -265,82 +271,52 @@
           subjectRows.push({raw:subj,label:getSubjectLabel(subj),short:getShortLabel(subj),th:thVal,pr:prVal,total:subjTotal,gp:gp,grade:gr});
         });
 
-        var total=result['TOTAL']||result['Total']||'';
-        var percentage=result['PERCENTAGE']||result['Percentage']||'';
         var gpa=result['GPA']||result['Gpa']||'';
         var grade=result['GRADE']||result['Grade']||result['Result']||'';
         var isNg=grade==='NG';
 
         var h = [];
-        h.push('<div class="result-card" style="max-width:820px;margin:0 auto;background:#fff;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">');
+        h.push('<div class="result-card" style="max-width:720px;margin:0 auto;background:#fff;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">');
 
         /* ── HEADER ── */
-        h.push('<div class="card-header-bg" style="padding:28px 32px 20px;text-align:center;">');
-        h.push('<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;">');
-        h.push('<img src="../assets/images/logo.png" alt="" style="width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);object-fit:contain;background:#fff;padding:4px;">');
-        h.push('<div style="text-align:left;"><h1 style="margin:0;font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Canvas+2 College of Management</h1><p style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.8);">Triyuga-11, Gaighat, Udayapur, Nepal</p></div>');
+        h.push('<div class="card-header-bg" style="padding:32px 32px 24px;text-align:center;">');
+        h.push('<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px;">');
+        h.push('<img src="../assets/images/logo.png" alt="" style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);object-fit:contain;background:#fff;padding:5px;">');
+        h.push('<div style="text-align:left;"><h1 style="margin:0;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Canvas+2 College of Management</h1><p style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.8);">Triyuga-11, Gaighat, Udayapur, Nepal</p></div>');
         h.push('</div>');
-        h.push('<div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:10px;">');
-        h.push('<span style="display:inline-block;background:rgba(255,255,255,0.15);padding:4px 24px;border-radius:20px;font-size:13px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Academic Grade Sheet</span>');
+        h.push('<div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;">');
+        h.push('<span style="display:inline-block;background:rgba(255,255,255,0.15);padding:5px 28px;border-radius:20px;font-size:14px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Result Statement</span>');
         h.push('</div></div>');
 
         /* ── INFO BAR ── */
-        h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">');
-        h.push('<div><span style="display:inline-block;padding:3px 12px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:11px;font-weight:600;margin-right:8px;">SYMBOL NO</span><span style="font-weight:700;color:#1f2328;font-size:15px;">' + symbol + '</span></div>');
-        h.push('<div><span style="display:inline-block;padding:3px 12px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:11px;font-weight:600;margin-right:8px;">STUDENT NAME</span><span style="font-weight:600;color:#1f2328;font-size:15px;">' + (studentName||'—') + '</span></div>');
+        h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">');
+        h.push('<div><span style="display:inline-block;padding:4px 14px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:12px;font-weight:600;margin-right:8px;">SYMBOL NO</span><span style="font-weight:700;color:#1f2328;font-size:16px;">' + symbol + '</span></div>');
+        h.push('<div><span style="display:inline-block;padding:4px 14px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:12px;font-weight:600;margin-right:8px;">STUDENT NAME</span><span style="font-weight:600;color:#1f2328;font-size:16px;">' + (studentName||'—') + '</span></div>');
         h.push('</div>');
 
-        /* ── TABLE ── */
-        h.push('<div style="padding:16px 20px;">');
-        h.push('<table style="width:100%;border-collapse:collapse;font-size:13px;">');
-        h.push('<thead><tr style="background:#1a3c6d;color:#fff;">');
-        h.push('<th style="padding:8px 6px;text-align:center;width:34px;font-size:11px;font-weight:600;">S.N.</th>');
-        h.push('<th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:600;">Subject</th>');
-        h.push('<th style="padding:8px 6px;text-align:center;width:38px;font-size:11px;font-weight:600;">TH</th>');
-        h.push('<th style="padding:8px 6px;text-align:center;width:38px;font-size:11px;font-weight:600;">PR</th>');
-        h.push('<th style="padding:8px 6px;text-align:center;width:50px;font-size:11px;font-weight:600;">Total</th>');
-        h.push('<th style="padding:8px 6px;text-align:center;width:40px;font-size:11px;font-weight:600;">GP</th>');
-        h.push('<th style="padding:8px 6px;text-align:center;width:52px;font-size:11px;font-weight:600;">Grade</th></tr></thead><tbody>');
-
-        subjectRows.forEach(function(row,i){
-          var rNg=row.grade==='NG';
-          h.push('<tr style="border-bottom:1px solid #e2e8f0;">');
-          h.push('<td style="padding:7px 4px;text-align:center;color:#656d76;font-size:12px;">'+(i+1)+'</td>');
-          h.push('<td style="padding:7px 10px;font-weight:500;color:#1f2328;">'+row.label+'</td>');
-          h.push('<td style="padding:7px 4px;text-align:center;color:#656d76;">'+(row.th!==''?row.th:'-')+'</td>');
-          h.push('<td style="padding:7px 4px;text-align:center;color:#656d76;">'+(row.pr!==''?row.pr:'-')+'</td>');
-          h.push('<td style="padding:7px 4px;text-align:center;font-weight:600;'+(rNg?'color:#cf222e;':'color:#1f2328;')+'">'+(row.total!==''?row.total:'-')+'</td>');
-          h.push('<td style="padding:7px 4px;text-align:center;'+(rNg?'color:#cf222e;font-weight:600;':'color:#656d76;')+'">'+row.gp+'</td>');
-          var gc=rNg?'#cf222e':row.grade==='A+'||row.grade==='A'?'#1a7f37':'#1f2328';
-          h.push('<td style="padding:7px 4px;text-align:center;font-weight:700;color:'+gc+';">'+row.grade+'</td></tr>');
-        });
-
-        var tTH=0,tPR=0,tSum=0,hTH=false,hPR=false;
-        subjectRows.forEach(function(r){if(r.th!==''&&!isNaN(Number(r.th))){tTH+=Number(r.th);hTH=true;}if(r.pr!==''&&!isNaN(Number(r.pr))){tPR+=Number(r.pr);hPR=true;}if(r.total!==''&&!isNaN(Number(r.total)))tSum+=Number(r.total);});
-        h.push('</tbody><tfoot><tr style="background:#f8fafc;font-weight:700;border-top:2px solid #1a3c6d;">');
-        h.push('<td style="padding:8px 4px;text-align:center;"></td><td style="padding:8px 10px;font-size:12px;color:#656d76;">GRAND TOTAL</td>');
-        h.push('<td style="padding:8px 4px;text-align:center;">'+(hTH?tTH:'')+'</td>');
-        h.push('<td style="padding:8px 4px;text-align:center;">'+(hPR?tPR:'')+'</td>');
-        h.push('<td style="padding:8px 4px;text-align:center;font-size:15px;color:#1a3c6d;">'+tSum+'</td>');
-        h.push('<td></td><td></td></tr></tfoot></table></div>');
-
-        /* ── SUMMARY ── */
-        h.push('<div style="display:flex;justify-content:center;flex-wrap:wrap;gap:0;padding:12px 24px;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background:#f8fafc;">');
-        if(total!=='')h.push('<div style="padding:8px 24px;border-right:1px solid #e2e8f0;text-align:center;"><div style="font-size:10px;text-transform:uppercase;color:#656d76;letter-spacing:1px;margin-bottom:2px;">Total</div><div style="font-size:18px;font-weight:700;color:#1f2328;">'+total+'</div></div>');
-        if(percentage!=='')h.push('<div style="padding:8px 24px;border-right:1px solid #e2e8f0;text-align:center;"><div style="font-size:10px;text-transform:uppercase;color:#656d76;letter-spacing:1px;margin-bottom:2px;">Percentage</div><div style="font-size:18px;font-weight:700;color:#1f2328;">'+percentage+'</div></div>');
-        if(gpa!=='')h.push('<div style="padding:8px 24px;border-right:1px solid #e2e8f0;text-align:center;"><div style="font-size:10px;text-transform:uppercase;color:#656d76;letter-spacing:1px;margin-bottom:2px;">GPA</div><div style="font-size:22px;font-weight:800;'+(isNg?'color:#cf222e;':'color:#1a3c6d;')+'">'+gpa+'</div></div>');
-        if(grade!=='')h.push('<div style="padding:8px 24px;text-align:center;"><div style="font-size:10px;text-transform:uppercase;color:#656d76;letter-spacing:1px;margin-bottom:2px;">Grade</div><div style="font-size:22px;font-weight:800;'+(isNg?'color:#cf222e;':'color:#1a3c6d;')+'">'+grade+'</div></div>');
+        /* ── RESULT DISPLAY ── */
+        var gradeColor = isNg ? '#cf222e' : (grade === 'A+' || grade === 'A' ? '#1a7f37' : '#1a3c6d');
+        h.push('<div style="padding:40px 32px;text-align:center;">');
+        h.push('<div style="margin-bottom:32px;">');
+        h.push('<div style="font-size:12px;text-transform:uppercase;color:#656d76;letter-spacing:2px;margin-bottom:8px;">Grade Point Average</div>');
+        h.push('<div style="font-size:56px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';line-height:1;">' + (gpa || '—') + '</div>');
+        h.push('</div>');
+        h.push('<div style="width:120px;height:3px;background:#e2e8f0;margin:0 auto 32px;border-radius:2px;"></div>');
+        h.push('<div>');
+        h.push('<div style="font-size:12px;text-transform:uppercase;color:#656d76;letter-spacing:2px;margin-bottom:8px;">Overall Grade</div>');
+        h.push('<div style="display:inline-block;padding:10px 40px;border-radius:8px;font-size:32px;font-weight:800;letter-spacing:2px;color:#fff;background:' + gradeColor + ';">' + (grade || '—') + '</div>');
+        h.push('</div>');
         h.push('</div>');
 
         /* ── SIGNATURES ── */
-        h.push('<div style="display:flex;justify-content:space-between;padding:20px 40px 16px;">');
-        h.push('<div style="text-align:center;"><div style="width:160px;border-top:1px solid #656d76;margin:0 auto 4px;"></div><div style="font-size:11px;color:#656d76;">Exam Controller</div></div>');
-        h.push('<div style="text-align:center;"><div style="width:160px;border-top:1px solid #656d76;margin:0 auto 4px;"></div><div style="font-size:11px;color:#656d76;">Principal</div></div>');
-        h.push('<div style="text-align:center;"><div style="width:160px;border-top:1px solid #656d76;margin:0 auto 4px;"></div><div style="font-size:11px;color:#656d76;">College Seal</div></div>');
+        h.push('<div style="display:flex;justify-content:space-around;padding:24px 40px 20px;border-top:1px solid #e2e8f0;">');
+        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Exam Controller</div></div>');
+        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Principal</div></div>');
+        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">College Seal</div></div>');
         h.push('</div>');
 
         /* ── FOOTER ── */
-        h.push('<div style="padding:8px 20px;text-align:center;font-size:10px;color:#8c959f;border-top:1px solid #e2e8f0;">Canvas+2 College of Management &bull; Triyuga-11, Gaighat, Udayapur, Nepal &bull; ' + sheet.name + '</div>');
+        h.push('<div style="padding:10px 20px;text-align:center;font-size:10px;color:#8c959f;border-top:1px solid #e2e8f0;">Canvas+2 College of Management &bull; Triyuga-11, Gaighat, Udayapur, Nepal &bull; ' + sheet.name + '</div>');
         h.push('</div>');
 
         /* ── ACTION BUTTONS ── */
