@@ -71,14 +71,13 @@
 
     @media print {
       body { background:#fff !important; margin:0 !important; padding:0 !important; }
-      .sidebar, .admin-header, .fullscreen-header, .edit-toolbar { display:none !important; }
-      .main-content { margin:0 !important; padding:0 !important; }
-      .page-content { padding:0 !important; max-width:100% !important; }
-      .fullscreen-overlay { position:static !important; display:flex !important; }
-      .fullscreen-body { padding:0 !important; }
-      .fullscreen-body .gs { padding:4mm 4mm 6mm !important; }
+      .sidebar, .admin-header, .page-content, .main-content, #toastContainer, .toast-container { display:none !important; }
+      .fullscreen-overlay { position:fixed !important; top:8mm; left:8mm; right:8mm; bottom:8mm; display:flex !important; flex-direction:column !important; background:#fff !important; z-index:9999 !important; }
+      .fullscreen-header { display:none !important; }
+      .fullscreen-body { flex:1 !important; display:flex !important; flex-direction:column !important; padding:0 !important; }
+      .fullscreen-body .gs { flex:1 !important; display:flex !important; flex-direction:column !important; padding:4mm 4mm 6mm !important; }
       .watermark-logo { display:block !important; }
-      @page { size:A4; margin:8mm; }
+      @page { size:A4; margin:0; }
     }
   </style>
 </head>
