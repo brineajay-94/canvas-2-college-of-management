@@ -14,14 +14,40 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    .result-card { border-radius:16px !important; }
-    .result-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
-    .result-table thead th { background:#1a3c6d; color:#fff; padding:8px 12px; font-size:0.8rem; font-weight:600; text-align:center; }
-    .result-table thead th:first-child { text-align:left; border-radius:6px 0 0 0; }
-    .result-table thead th:last-child { border-radius:0 6px 0 0; }
-    .result-table td { padding:7px 12px; border-bottom:1px solid #e2e8f0; text-align:center; }
-    .result-table td:first-child { text-align:left; font-weight:500; color:#1f2328; }
-    .result-table tbody tr:last-child td { border-bottom:none; }
+    .watermark-text {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%) rotate(-30deg);
+      font-size:5rem; font-weight:900;
+      color:rgba(26,60,109,0.05);
+      font-family:Georgia,serif; letter-spacing:12px;
+      pointer-events:none; z-index:9;
+      white-space:nowrap; width:100%; text-align:center;
+    }
+    .gs { font-family:'Segoe UI',Helvetica,Arial,sans-serif; }
+    .gs-header { background:#1a3c6d; color:#fff; text-align:center; padding:24px 30px 18px; position:relative; }
+    .gs-header:after { content:''; position:absolute; bottom:0; left:5%; right:5%; height:2px; background:rgba(255,255,255,0.15); }
+    .gs-body { padding:0; }
+    .gs-info { display:flex; justify-content:space-between; padding:14px 28px; background:#f8fafc; border-bottom:1px solid #d0d7de; }
+    .gs-info-item { display:flex; align-items:center; gap:8px; font-size:14px; }
+    .gs-info-label { background:#1a3c6d; color:#fff; padding:2px 10px; border-radius:4px; font-size:11px; font-weight:600; letter-spacing:0.5px; }
+    .gs-info-value { font-weight:600; color:#1f2328; }
+    .gs-table-wrap { padding:0; }
+    .gs-table { width:100%; border-collapse:collapse; }
+    .gs-table thead th { background:#eef1f5; color:#1f2328; padding:10px 16px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #1a3c6d; }
+    .gs-table thead th:first-child { text-align:left; padding-left:28px; }
+    .gs-table td { padding:9px 16px; border-bottom:1px solid #e2e8f0; text-align:center; font-size:14px; }
+    .gs-table td:first-child { text-align:left; padding-left:28px; font-weight:500; color:#1f2328; }
+    .gs-table tbody tr:last-child td { border-bottom:1px solid #d0d7de; }
+    .gs-summary { display:flex; justify-content:center; align-items:center; gap:56px; padding:22px 28px; border-top:2px solid #1a3c6d; }
+    .gs-gpa-label { font-size:11px; text-transform:uppercase; color:#656d76; letter-spacing:1.5px; margin-bottom:4px; }
+    .gs-gpa-value { font-size:38px; font-weight:800; line-height:1; }
+    .gs-grade-badge { padding:8px 32px; border-radius:8px; font-size:26px; font-weight:800; letter-spacing:2px; color:#fff; }
+    .gs-signatures { display:flex; justify-content:space-around; padding:22px 40px 28px; border-top:1px solid #d0d7de; }
+    .gs-signature-item { text-align:center; }
+    .gs-signature-line { width:150px; border-top:2px solid #1a3c6d; margin:0 auto 8px; }
+    .gs-signature-title { font-size:12px; color:#656d76; font-weight:500; }
+    .gs-footer { text-align:center; padding:10px 20px; font-size:11px; color:#8c959f; border-top:1px solid #d0d7de; }
+    .no-print { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:16px; }
     @media print {
       body { background:#fff !important; margin:0 !important; padding:0 !important; }
       body.admin-body { display:block !important; }
@@ -30,7 +56,15 @@
       .main-content { margin-left:0 !important; padding:0 !important; width:100% !important; }
       .page-content { padding:0 !important; max-width:100% !important; }
       #resultDisplay { display:flex !important; align-items:center !important; justify-content:center !important; min-height:100vh !important; margin:0 !important; padding:8mm !important; box-sizing:border-box !important; }
-      #resultDisplay .result-card { width:100% !important; max-width:780px !important; margin:0 auto !important; border-radius:0 !important; box-shadow:0 0 0 3px #1a3c6d, 0 0 0 6px #b0b8c4 !important; border:none !important; page-break-inside:avoid !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+      #resultDisplay .gs {
+        width:100% !important; max-width:780px !important; margin:0 auto !important;
+        box-shadow:0 0 0 3px #1a3c6d, 0 0 0 6px #b0b8c4 !important;
+        border:none !important; border-radius:0 !important;
+        page-break-inside:avoid !important;
+        -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      }
+      #resultDisplay .gs-header { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+      #resultDisplay .gs-table thead th { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
       .watermark-text { display:block !important; }
       @page { size:A4; margin:0; }
     }
@@ -119,13 +153,13 @@
           </select>
         </div>
         <div class="form-group" id="classCustomGroup" style="display:none;">
-          <label for="classCustom"><i class="fas fa-pen"></i> Custom Class Label</label>
+          <label for="classCustom"><i class="fas fa-pen"></i> Custom Class</label>
           <input type="text" id="classCustom" class="form-control" placeholder="e.g. Class 12 Science">
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeClassModal()">Cancel</button>
-        <button class="btn btn-primary" id="classConfirmBtn" onclick="proceedWithClass()">Continue</button>
+        <button class="btn btn-primary" onclick="proceedWithClass()">Continue</button>
       </div>
     </div>
   </div>
@@ -208,56 +242,78 @@
     }
 
     function printGradesheet() {
-      if (!document.querySelector('#resultDisplay .result-card')) return;
+      if (!document.querySelector('#resultDisplay .gs')) return;
       showClassModal('print');
     }
 
     function downloadResult(format) {
-      if (!document.querySelector('#resultDisplay .result-card')) return;
+      if (!document.querySelector('#resultDisplay .gs')) return;
       showClassModal(format);
     }
 
-    function buildResultCard(symbol, studentName, subjectRows, gpa, grade, sheetName, cls) {
+    function gradeColor(g) {
+      if (g === 'NG') return '#cf222e';
+      if (g === 'A+' || g === 'A') return '#1a7f37';
+      return '#1a3c6d';
+    }
+
+    function buildGradesheet(symbol, studentName, subjectRows, gpa, grade, sheetName, cls) {
       var isNg = grade === 'NG';
-      var color = isNg ? '#c62828' : '#2e7d32';
-      var icon = isNg ? 'fa-exclamation-triangle' : 'fa-star';
-      var title = isNg ? 'Better luck next time' : 'Congratulations!';
-      var gpaColor = isNg ? '#c62828' : '#2e7d32';
-
+      var gc = gradeColor(grade);
       var h = [];
-      h.push('<div class="result-card" style="max-width:600px;margin:24px auto 0;padding:40px 28px 28px;text-align:center;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.1);">');
+      h.push('<div class="gs" style="max-width:780px;margin:24px auto 0;background:#fff;border:1px solid #b0b8c4;border-radius:6px;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.06);">');
 
-      h.push('<div style="font-size:48px;color:' + color + ';margin-bottom:12px;"><i class="fas ' + icon + '"></i></div>');
-      h.push('<p style="font-size:22px;font-weight:700;color:#1f2328;margin:0 0 4px;">' + title + '</p>');
-      h.push('<p style="font-size:15px;color:#656d76;margin:0 0 18px;">' + (studentName ? studentName + ' &mdash; ' : '') + 'Symbol No: ' + symbol + '</p>');
+      h.push('<div class="gs-header">');
+      h.push('<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;">');
+      h.push('<img src="../assets/images/logo.png" alt="" style="width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);object-fit:contain;background:#fff;padding:3px;">');
+      h.push('<div style="text-align:left;"><div style="font-size:20px;font-weight:800;letter-spacing:-0.3px;">Canvas+2 College of Management</div><div style="font-size:12px;color:rgba(255,255,255,0.75);">Triyuga-11, Gaighat, Udayapur, Nepal</div></div>');
+      h.push('</div>');
+      h.push('<div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;">');
+      h.push('<span style="background:rgba(255,255,255,0.12);padding:3px 22px;border-radius:20px;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ACADEMIC GRADE SHEET</span>');
+      if (cls) h.push('<span style="background:rgba(255,255,255,0.1);padding:3px 16px;border-radius:20px;font-size:13px;font-weight:600;">' + cls + '</span>');
+      h.push('</div></div>');
 
-      h.push('<div style="font-size:11px;text-transform:uppercase;color:#656d76;letter-spacing:1.5px;margin-bottom:2px;">GPA</div>');
-      h.push('<div style="font-size:36px;font-weight:800;color:' + gpaColor + ';line-height:1.2;margin-bottom:4px;">' + (gpa || '—') + '</div>');
-
-      if (grade) {
-        var gradeBg = isNg ? '#c62828' : (grade === 'A+' || grade === 'A' ? '#2e7d32' : '#1a3c6d');
-        h.push('<div style="display:inline-block;padding:4px 24px;border-radius:20px;font-size:16px;font-weight:700;letter-spacing:1px;color:#fff;background:' + gradeBg + ';margin-bottom:20px;">' + grade + '</div>');
-      }
+      h.push('<div class="gs-info">');
+      h.push('<div class="gs-info-item"><span class="gs-info-label">SYMBOL NO</span><span class="gs-info-value">' + symbol + '</span></div>');
+      h.push('<div class="gs-info-item"><span class="gs-info-label">STUDENT</span><span class="gs-info-value">' + (studentName||'—') + '</span></div>');
+      if (sheetName) h.push('<div class="gs-info-item"><span class="gs-info-label">EXAM</span><span class="gs-info-value">' + sheetName + '</span></div>');
+      h.push('</div>');
 
       if (subjectRows.length) {
-        h.push('<div style="text-align:left;margin-bottom:8px;">');
-        h.push('<table class="result-table">');
-        h.push('<thead><tr><th>Subject</th><th style="width:80px;">Grade</th></tr></thead><tbody>');
+        h.push('<div class="gs-table-wrap">');
+        h.push('<table class="gs-table"><thead><tr>');
+        h.push('<th style="width:60%;">Subject</th><th>Grade</th><th>Grade Point</th><th>Remarks</th>');
+        h.push('</tr></thead><tbody>');
         subjectRows.forEach(function(row){
-          var c = row.grade === 'NG' ? '#c62828' : (row.grade === 'A+' || row.grade === 'A' ? '#2e7d32' : '#1f2328');
-          h.push('<tr><td>' + row.label + '</td><td style="font-weight:700;color:' + c + ';">' + row.grade + '</td></tr>');
+          var gp = row.grade === 'A+' ? 4.0 : row.grade === 'A' ? 3.6 : row.grade === 'B+' ? 3.2 : row.grade === 'C+' ? 2.8 : row.grade === 'C' ? 2.4 : row.grade === 'D+' ? 2.0 : row.grade === 'D' ? 1.6 : 0.0;
+          var remark = row.grade === 'NG' ? 'Fail' : 'Pass';
+          var gC = gradeColor(row.grade);
+          h.push('<tr>');
+          h.push('<td>' + row.label + '</td>');
+          h.push('<td style="font-weight:700;color:' + gC + ';">' + row.grade + '</td>');
+          h.push('<td style="font-weight:600;">' + (row.grade === 'NG' ? '0.0' : gp.toFixed(1)) + '</td>');
+          h.push('<td style="font-size:13px;color:' + (remark === 'Pass' ? '#1a7f37' : '#cf222e') + ';font-weight:600;">' + remark + '</td>');
+          h.push('</tr>');
         });
         h.push('</tbody></table></div>');
       }
 
-      var gradeBg2 = isNg ? '#c62828' : (grade === 'A+' || grade === 'A' ? '#2e7d32' : '#1a3c6d');
-      h.push('<div style="display:inline-block;padding:4px 24px;border-radius:20px;font-size:14px;font-weight:600;color:#fff;background:' + gradeBg2 + ';margin-top:4px;">Overall Grade: ' + (grade || '—') + '</div>');
+      h.push('<div class="gs-summary">');
+      h.push('<div style="text-align:center;"><div class="gs-gpa-label">GPA</div><div class="gs-gpa-value" style="color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';">' + (gpa || '—') + '</div></div>');
+      h.push('<div style="text-align:center;"><div class="gs-gpa-label">Grade</div><div class="gs-grade-badge" style="background:' + (isNg ? '#cf222e' : gc) + ';">' + (grade || '—') + '</div></div>');
+      h.push('</div>');
 
-      h.push('<div style="margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;color:#8c959f;">' + sheetName + (cls ? ' &bull; ' + cls : '') + '</div>');
+      h.push('<div class="gs-signatures">');
+      h.push('<div class="gs-signature-item"><div class="gs-signature-line"></div><div class="gs-signature-title">Exam Controller</div></div>');
+      h.push('<div class="gs-signature-item"><div class="gs-signature-line"></div><div class="gs-signature-title">Principal</div></div>');
+      h.push('<div class="gs-signature-item"><div class="gs-signature-line"></div><div class="gs-signature-title">College Seal</div></div>');
+      h.push('</div>');
+
+      h.push('<div class="gs-footer">This is a computer-generated document. No signature is required. &bull; Canvas+2 College of Management, Triyuga-11, Gaighat, Udayapur, Nepal</div>');
 
       h.push('</div>');
 
-      h.push('<div class="print-btn-bar no-print" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px;">');
+      h.push('<div class="no-print">');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> PNG</button>');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>');
       h.push('<button class="btn btn-primary btn-sm" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>');
@@ -339,7 +395,7 @@
         _resultData.gpa = gpa;
         _resultData.grade = grade;
 
-        display.innerHTML = buildResultCard(symbol, studentName, subjectRows, gpa, grade, sheet.name, '');
+        display.innerHTML = buildGradesheet(symbol, studentName, subjectRows, gpa, grade, sheet.name, '');
       } catch (e) {
         status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Result not found.') + '</span>';
         display.innerHTML = '';
@@ -348,12 +404,11 @@
 
     function doPrint(cls) {
       var d = _resultData;
-      document.getElementById('resultDisplay').innerHTML = buildResultCard(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
-      var card = document.querySelector('#resultDisplay .result-card');
+      document.getElementById('resultDisplay').innerHTML = buildGradesheet(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+      var card = document.querySelector('#resultDisplay .gs');
       var wm = document.createElement('div');
       wm.className = 'watermark-text';
       wm.textContent = 'Canvas+2';
-      wm.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:4rem;font-weight:900;color:rgba(26,60,109,0.06);font-family:Georgia,serif;letter-spacing:8px;pointer-events:none;z-index:999;white-space:nowrap;width:100%;text-align:center;';
       card.style.position = 'relative';
       card.appendChild(wm);
       setTimeout(function(){ window.print(); setTimeout(function(){ if(wm.parentNode)wm.parentNode.removeChild(wm); }, 300); }, 200);
@@ -361,12 +416,11 @@
 
     async function doDownload(format, cls) {
       var d = _resultData;
-      document.getElementById('resultDisplay').innerHTML = buildResultCard(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
-      var card = document.querySelector('#resultDisplay .result-card');
+      document.getElementById('resultDisplay').innerHTML = buildGradesheet(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+      var card = document.querySelector('#resultDisplay .gs');
       var wm = document.createElement('div');
       wm.className = 'watermark-text';
       wm.textContent = 'Canvas+2';
-      wm.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:4rem;font-weight:900;color:rgba(26,60,109,0.06);font-family:Georgia,serif;letter-spacing:8px;pointer-events:none;z-index:999;white-space:nowrap;width:100%;text-align:center;';
       card.style.position = 'relative';
       card.appendChild(wm);
       try {
