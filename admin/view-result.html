@@ -17,31 +17,26 @@
     .card-header-bg { background: linear-gradient(135deg, #1a3c6d 0%, #1f4d8c 60%, #15325a 100%); }
     .print-btn-bar { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:16px; }
     .watermark-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-30deg); font-size:4rem; font-weight:900; color:rgba(26,60,109,0.06); font-family:Georgia,serif; letter-spacing:8px; pointer-events:none; z-index:999; white-space:nowrap; width:100%; text-align:center; }
-
-    .result-card {
-      position:relative;
-      border:1px solid #b0b8c4 !important;
-      box-shadow:0 0 0 3px #1a3c6d, 0 4px 24px rgba(0,0,0,0.06) !important;
-    }
+    .result-card { position:relative; border:1px solid #b0b8c4 !important; box-shadow:0 0 0 3px #1a3c6d, 0 4px 24px rgba(0,0,0,0.06) !important; }
+    .result-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .result-table thead th { background:#1a3c6d; color:#fff; padding:9px 12px; font-size:12px; font-weight:600; text-align:center; }
+    .result-table thead th:first-child { text-align:left; }
+    .result-table td { padding:8px 12px; border-bottom:1px solid #e2e8f0; text-align:center; }
+    .result-table td:first-child { text-align:left; font-weight:500; color:#1f2328; }
 
     @media print {
       body { background:#fff !important; margin:0 !important; padding:0 !important; }
       body.admin-body { display:block !important; }
       .sidebar, .admin-header, .page-content > .panel:first-child, .print-btn-bar, .btn, .toast-container,
-      .sidebar-overlay, #toastContainer, .mobile-toggle { display:none !important; }
+      .sidebar-overlay, #toastContainer, .mobile-toggle, .modal-overlay { display:none !important; }
       .main-content { margin-left:0 !important; padding:0 !important; width:100% !important; }
       .page-content { padding:0 !important; max-width:100% !important; }
       #resultDisplay { display:flex !important; align-items:center !important; justify-content:center !important; min-height:100vh !important; margin:0 !important; padding:10mm !important; box-sizing:border-box !important; }
       #resultDisplay .result-card {
-        width:100% !important;
-        max-width:780px !important;
-        margin:0 auto !important;
+        width:100% !important; max-width:780px !important; margin:0 auto !important;
         box-shadow:0 0 0 3px #1a3c6d, 0 0 0 6px #b0b8c4 !important;
-        border:none !important;
-        border-radius:0 !important;
-        page-break-inside:avoid !important;
-        -webkit-print-color-adjust:exact !important;
-        print-color-adjust:exact !important;
+        border:none !important; border-radius:0 !important; page-break-inside:avoid !important;
+        -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
       #resultDisplay .watermark-text { display:block !important; }
       #resultDisplay .card-header-bg { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
@@ -116,6 +111,33 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="classModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <span class="modal-title">Select Class</span>
+        <button class="modal-close" onclick="closeClassModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="classSelect"><i class="fas fa-graduation-cap"></i> Class</label>
+          <select id="classSelect" class="form-control" onchange="toggleClassCustom()">
+            <option value="Class 11">Class 11</option>
+            <option value="Class 12" selected>Class 12</option>
+            <option value="__custom__">Custom</option>
+          </select>
+        </div>
+        <div class="form-group" id="classCustomGroup" style="display:none;">
+          <label for="classCustom"><i class="fas fa-pen"></i> Custom Class Label</label>
+          <input type="text" id="classCustom" class="form-control" placeholder="e.g. Class 12 Science">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeClassModal()">Cancel</button>
+        <button class="btn btn-primary" id="classConfirmBtn" onclick="proceedWithClass()">Continue</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="../assets/js/firebase-config.js"></script>
@@ -126,6 +148,9 @@
   <script src="../assets/js/admin/admin.js"></script>
   <script>
     var _sheetsTabMap = {};
+    var _pendingAction = null;
+    var _resultData = null;
+    var _sheetName = '';
 
     async function loadPublishedSheets() {
       var select = document.getElementById('resultSheet');
@@ -162,49 +187,99 @@
       return info ? info.full : canon;
     }
 
-    function getShortLabel(raw) {
-      var canon = typeof SubjectUtils !== 'undefined' && SubjectUtils.match ? SubjectUtils.match(raw) : null;
-      if (!canon) return raw;
-      var info = _subjectNames[canon];
-      return info ? info.short : canon;
+    function toggleClassCustom() {
+      document.getElementById('classCustomGroup').style.display = document.getElementById('classSelect').value === '__custom__' ? '' : 'none';
+    }
+
+    function closeClassModal() {
+      document.getElementById('classModal').classList.remove('open');
+      _pendingAction = null;
+    }
+
+    function showClassModal(action) {
+      _pendingAction = action;
+      document.getElementById('classModal').classList.add('open');
+    }
+
+    function getSelectedClass() {
+      var sel = document.getElementById('classSelect').value;
+      if (sel === '__custom__') return document.getElementById('classCustom').value.trim() || 'Class 12';
+      return sel;
+    }
+
+    function proceedWithClass() {
+      var cls = getSelectedClass();
+      closeClassModal();
+      if (_pendingAction === 'print') doPrint(cls);
+      else if (_pendingAction === 'png') doDownload('png', cls);
+      else if (_pendingAction === 'pdf') doDownload('pdf', cls);
     }
 
     function printGradesheet() {
-      var card = document.querySelector('#resultDisplay .result-card');
-      if (!card) { window.print(); return; }
-      var wm = document.createElement('div');
-      wm.className = 'watermark-text';
-      wm.textContent = 'Canvas+2';
-      card.style.position = 'relative';
-      card.appendChild(wm);
-      setTimeout(function () {
-        window.print();
-        setTimeout(function () { if (wm.parentNode) wm.parentNode.removeChild(wm); }, 300);
-      }, 200);
+      if (!document.querySelector('#resultDisplay .result-card')) return;
+      showClassModal('print');
     }
 
-    async function downloadResult(format) {
-      var card = document.querySelector('#resultDisplay .result-card');
-      if (!card) return;
-      var wm = document.createElement('div');
-      wm.className = 'watermark-text';
-      wm.textContent = 'Canvas+2';
-      card.style.position = 'relative';
-      card.appendChild(wm);
-      try {
-        var canvas = await html2canvas(card, { scale: 3, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false });
-        if (format === 'png') {
-          var link = document.createElement('a'); link.download = 'gradesheet.png'; link.href = canvas.toDataURL('image/png'); link.click();
-        } else if (format === 'pdf') {
-          var imgData = canvas.toDataURL('image/png');
-          var pdf = new window.jspdf.jsPDF({ orientation: canvas.width > canvas.height ? 'l' : 'p', unit: 'mm', format: 'a4' });
-          var pw = pdf.internal.pageSize.getWidth();
-          var ph = (canvas.height * pw) / canvas.width;
-          pdf.addImage(imgData, 'PNG', 0, 0, pw, ph);
-          pdf.save('gradesheet.pdf');
-        }
-      } catch (e) { showToast('Download failed: ' + e.message, 'error'); }
-      if (wm.parentNode) wm.parentNode.removeChild(wm);
+    function downloadResult(format) {
+      if (!document.querySelector('#resultDisplay .result-card')) return;
+      showClassModal(format);
+    }
+
+    function buildResultCard(symbol, studentName, subjectRows, gpa, grade, sheetName, cls) {
+      var isNg = grade === 'NG';
+      var gradeColor = isNg ? '#cf222e' : (grade === 'A+' || grade === 'A' ? '#1a7f37' : '#1a3c6d');
+      var h = [];
+
+      h.push('<div class="result-card" style="max-width:780px;margin:0 auto;background:#fff;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">');
+
+      h.push('<div class="card-header-bg" style="padding:28px 32px 20px;text-align:center;">');
+      h.push('<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;">');
+      h.push('<img src="../assets/images/logo.png" alt="" style="width:52px;height:52px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);object-fit:contain;background:#fff;padding:4px;">');
+      h.push('<div style="text-align:left;"><h1 style="margin:0;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Canvas+2 College of Management</h1><p style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.8);">Triyuga-11, Gaighat, Udayapur, Nepal</p></div>');
+      h.push('</div>');
+      h.push('<div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;">');
+      h.push('<span style="display:inline-block;background:rgba(255,255,255,0.15);padding:4px 24px;border-radius:20px;font-size:13px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Result Statement</span>');
+      h.push('<span style="display:inline-block;background:rgba(255,255,255,0.12);padding:4px 18px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;">' + cls + '</span>');
+      h.push('</div></div>');
+
+      h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">');
+      h.push('<div><span style="display:inline-block;padding:3px 12px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:11px;font-weight:600;margin-right:8px;">SYMBOL NO</span><span style="font-weight:700;color:#1f2328;font-size:15px;">' + symbol + '</span></div>');
+      h.push('<div><span style="display:inline-block;padding:3px 12px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:11px;font-weight:600;margin-right:8px;">STUDENT NAME</span><span style="font-weight:600;color:#1f2328;font-size:15px;">' + (studentName||'—') + '</span></div>');
+      h.push('</div>');
+
+      if (subjectRows.length) {
+        h.push('<div style="padding:16px 20px 8px;">');
+        h.push('<table class="result-table">');
+        h.push('<thead><tr><th style="text-align:left;">Subject</th><th style="width:80px;">Grade</th></tr></thead><tbody>');
+        subjectRows.forEach(function(row){
+          var c = row.grade === 'NG' ? '#cf222e' : (row.grade === 'A+' || row.grade === 'A' ? '#1a7f37' : '#1f2328');
+          h.push('<tr><td>' + row.label + '</td><td style="font-weight:700;color:' + c + ';">' + row.grade + '</td></tr>');
+        });
+        h.push('</tbody></table></div>');
+      }
+
+      h.push('<div style="padding:20px 32px 24px;text-align:center;border-top:1px solid #e2e8f0;">');
+      h.push('<div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap;">');
+      h.push('<div><div style="font-size:11px;text-transform:uppercase;color:#656d76;letter-spacing:1.5px;margin-bottom:6px;">GPA</div><div style="font-size:40px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';line-height:1;">' + (gpa || '—') + '</div></div>');
+      h.push('<div><div style="font-size:11px;text-transform:uppercase;color:#656d76;letter-spacing:1.5px;margin-bottom:6px;">Grade</div><div style="display:inline-block;padding:8px 32px;border-radius:6px;font-size:28px;font-weight:800;letter-spacing:2px;color:#fff;background:' + gradeColor + ';">' + (grade || '—') + '</div></div>');
+      h.push('</div></div>');
+
+      h.push('<div style="display:flex;justify-content:space-around;padding:20px 40px 16px;border-top:1px solid #e2e8f0;">');
+      h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Exam Controller</div></div>');
+      h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Principal</div></div>');
+      h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">College Seal</div></div>');
+      h.push('</div>');
+
+      h.push('<div style="padding:8px 20px;text-align:center;font-size:10px;color:#8c959f;border-top:1px solid #e2e8f0;">Canvas+2 College of Management &bull; Triyuga-11, Gaighat, Udayapur, Nepal &bull; ' + sheetName + '</div>');
+      h.push('</div>');
+
+      h.push('<div class="print-btn-bar">');
+      h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> PNG</button>');
+      h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>');
+      h.push('<button class="btn btn-primary btn-sm" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>');
+      h.push('</div>');
+
+      return h.join('');
     }
 
     async function searchResult() {
@@ -230,6 +305,9 @@
         var result = await sheetsService.fetchResult(tabName, symbol, sheet.sheetId);
         status.innerHTML = '<span style="color:var(--color-success-emphasis);"><i class="fas fa-check-circle"></i> Result found!</span>';
 
+        _sheetName = sheet.name;
+        _resultData = { result: result, symbol: symbol };
+
         var nameKey = Object.keys(result).find(function(k){return /name|student/i.test(k)&&!/TH|PR/i.test(k);})||'';
         var studentName = result[nameKey]||'';
 
@@ -249,9 +327,8 @@
           if(detected[subj].totalKey){
             isCombined=true;
             var v=result[detected[subj].totalKey];
-            subjTotal=(v!==undefined&&v!==null&&v!=='')?Number(v):'';
-            thVal='';prVal='';
-          }else{
+            subjTotal=(v!==undefined&&v!==null&&v!=='')?Number(v):''; thVal=''; prVal='';
+          } else {
             var th=detected[subj].thKey?result[detected[subj].thKey]:undefined;
             var pr=detected[subj].prKey?result[detected[subj].prKey]:undefined;
             thVal=(th!==undefined&&th!==null&&th!=='')?th:'';
@@ -260,77 +337,66 @@
             subjTotal=(thVal!==''&&prVal!=='')?Number(thVal)+Number(prVal):(thVal!==''?Number(thVal):'');
           }
           if(isCombined&&subjTotal==='')return;
-          var gp='',gr='';
+          var gr='';
           if(subjTotal!==''&&!isNaN(subjTotal)){
             var t=Number(subjTotal);
-            gp=t>=90?'4.0':t>=80?'3.6':t>=70?'3.2':t>=60?'2.8':t>=50?'2.4':t>=40?'2.0':t>=35?'1.6':'0';
             gr=t>=90?'A+':t>=80?'A':t>=70?'B+':t>=60?'C+':t>=50?'C':t>=40?'D+':t>=35?'D':'NG';
-            if(!isCombined&&(Number(thVal)<27||(prVal!==''&&Number(prVal)<10)||t<35)){gp='0';gr='NG';}
-            if(isCombined&&t<35){gp='0';gr='NG';}
+            if(!isCombined&&(Number(thVal)<27||(prVal!==''&&Number(prVal)<10)||t<35))gr='NG';
+            if(isCombined&&t<35)gr='NG';
           }
-          subjectRows.push({raw:subj,label:getSubjectLabel(subj),short:getShortLabel(subj),th:thVal,pr:prVal,total:subjTotal,gp:gp,grade:gr});
+          subjectRows.push({label:getSubjectLabel(subj),grade:gr||'NG'});
         });
 
         var gpa=result['GPA']||result['Gpa']||'';
         var grade=result['GRADE']||result['Grade']||result['Result']||'';
-        var isNg=grade==='NG';
 
-        var h = [];
-        h.push('<div class="result-card" style="max-width:720px;margin:0 auto;background:#fff;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">');
+        _resultData.studentName = studentName;
+        _resultData.subjectRows = subjectRows;
+        _resultData.gpa = gpa;
+        _resultData.grade = grade;
 
-        /* ── HEADER ── */
-        h.push('<div class="card-header-bg" style="padding:32px 32px 24px;text-align:center;">');
-        h.push('<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px;">');
-        h.push('<img src="../assets/images/logo.png" alt="" style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);object-fit:contain;background:#fff;padding:5px;">');
-        h.push('<div style="text-align:left;"><h1 style="margin:0;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Canvas+2 College of Management</h1><p style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.8);">Triyuga-11, Gaighat, Udayapur, Nepal</p></div>');
-        h.push('</div>');
-        h.push('<div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:12px;">');
-        h.push('<span style="display:inline-block;background:rgba(255,255,255,0.15);padding:5px 28px;border-radius:20px;font-size:14px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Result Statement</span>');
-        h.push('</div></div>');
-
-        /* ── INFO BAR ── */
-        h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">');
-        h.push('<div><span style="display:inline-block;padding:4px 14px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:12px;font-weight:600;margin-right:8px;">SYMBOL NO</span><span style="font-weight:700;color:#1f2328;font-size:16px;">' + symbol + '</span></div>');
-        h.push('<div><span style="display:inline-block;padding:4px 14px;background:#1a3c6d;color:#fff;border-radius:4px;font-size:12px;font-weight:600;margin-right:8px;">STUDENT NAME</span><span style="font-weight:600;color:#1f2328;font-size:16px;">' + (studentName||'—') + '</span></div>');
-        h.push('</div>');
-
-        /* ── RESULT DISPLAY ── */
-        var gradeColor = isNg ? '#cf222e' : (grade === 'A+' || grade === 'A' ? '#1a7f37' : '#1a3c6d');
-        h.push('<div style="padding:40px 32px;text-align:center;">');
-        h.push('<div style="margin-bottom:32px;">');
-        h.push('<div style="font-size:12px;text-transform:uppercase;color:#656d76;letter-spacing:2px;margin-bottom:8px;">Grade Point Average</div>');
-        h.push('<div style="font-size:56px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';line-height:1;">' + (gpa || '—') + '</div>');
-        h.push('</div>');
-        h.push('<div style="width:120px;height:3px;background:#e2e8f0;margin:0 auto 32px;border-radius:2px;"></div>');
-        h.push('<div>');
-        h.push('<div style="font-size:12px;text-transform:uppercase;color:#656d76;letter-spacing:2px;margin-bottom:8px;">Overall Grade</div>');
-        h.push('<div style="display:inline-block;padding:10px 40px;border-radius:8px;font-size:32px;font-weight:800;letter-spacing:2px;color:#fff;background:' + gradeColor + ';">' + (grade || '—') + '</div>');
-        h.push('</div>');
-        h.push('</div>');
-
-        /* ── SIGNATURES ── */
-        h.push('<div style="display:flex;justify-content:space-around;padding:24px 40px 20px;border-top:1px solid #e2e8f0;">');
-        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Exam Controller</div></div>');
-        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">Principal</div></div>');
-        h.push('<div style="text-align:center;"><div style="width:140px;border-top:2px solid #1a3c6d;margin:0 auto 6px;"></div><div style="font-size:12px;color:#656d76;font-weight:500;">College Seal</div></div>');
-        h.push('</div>');
-
-        /* ── FOOTER ── */
-        h.push('<div style="padding:10px 20px;text-align:center;font-size:10px;color:#8c959f;border-top:1px solid #e2e8f0;">Canvas+2 College of Management &bull; Triyuga-11, Gaighat, Udayapur, Nepal &bull; ' + sheet.name + '</div>');
-        h.push('</div>');
-
-        /* ── ACTION BUTTONS ── */
-        h.push('<div class="print-btn-bar">');
-        h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> PNG</button>');
-        h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>');
-        h.push('<button class="btn btn-primary btn-sm" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>');
-        h.push('</div>');
-
-        display.innerHTML = h.join('');
+        display.innerHTML = buildResultCard(symbol, studentName, subjectRows, gpa, grade, sheet.name, 'Class 12');
       } catch (e) {
         status.innerHTML = '<span style="color:var(--color-danger-fg);"><i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Result not found.') + '</span>';
         display.innerHTML = '';
       }
+    }
+
+    function doPrint(cls) {
+      var d = _resultData;
+      document.getElementById('resultDisplay').innerHTML = buildResultCard(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+      var card = document.querySelector('#resultDisplay .result-card');
+      var wm = document.createElement('div');
+      wm.className = 'watermark-text';
+      wm.textContent = 'Canvas+2';
+      card.style.position = 'relative';
+      card.appendChild(wm);
+      setTimeout(function(){ window.print(); setTimeout(function(){ if(wm.parentNode)wm.parentNode.removeChild(wm); }, 300); }, 200);
+    }
+
+    async function doDownload(format, cls) {
+      var d = _resultData;
+      document.getElementById('resultDisplay').innerHTML = buildResultCard(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+      var card = document.querySelector('#resultDisplay .result-card');
+      var wm = document.createElement('div');
+      wm.className = 'watermark-text';
+      wm.textContent = 'Canvas+2';
+      card.style.position = 'relative';
+      card.appendChild(wm);
+      try {
+        var canvas = await html2canvas(card, { scale: 3, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false });
+        if (format === 'png') {
+          var link = document.createElement('a'); link.download = 'gradesheet.png'; link.href = canvas.toDataURL('image/png'); link.click();
+        } else {
+          var imgData = canvas.toDataURL('image/png');
+          var pdf = new window.jspdf.jsPDF({ orientation: canvas.width > canvas.height ? 'l' : 'p', unit: 'mm', format: 'a4' });
+          var pw = pdf.internal.pageSize.getWidth();
+          var ph = (canvas.height * pw) / canvas.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, pw, ph);
+          pdf.save('gradesheet.pdf');
+        }
+      } catch (e) { showToast('Download failed: ' + e.message, 'error'); }
+      if (wm.parentNode) wm.parentNode.removeChild(wm);
     }
 
     document.addEventListener('DOMContentLoaded', function () { loadPublishedSheets(); });
