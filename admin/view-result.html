@@ -53,6 +53,15 @@
     .shape-handle.w { top:50%; left:-6px; margin-top:-5px; cursor:w-resize; }
 
     .edit-mode .gs * { cursor:text; }
+
+    @media screen {
+      #resultDisplay .gs { max-width:100% !important; border:none !important; border-radius:0 !important; padding:4px 8px !important; }
+      #resultDisplay .gs, #resultDisplay .gs * { font-size:9px !important; }
+      #resultDisplay .gs [style*="font-weight:800"], #resultDisplay .gs [style*="font-weight:700"] { font-size:12px !important; }
+      #resultDisplay .gs img { width:22px !important; height:22px !important; padding:0 !important; }
+      #resultDisplay .gs th, #resultDisplay .gs td { padding:2px 6px !important; }
+      #resultDisplay .gs .sig-line { width:60px !important; margin-bottom:3px !important; }
+    }
     .edit-mode .gs table td, .edit-mode .gs table th { cursor:text; }
     .edit-mode .editable-shape { cursor:move !important; }
     .edit-mode .editable-shape * { cursor:move !important; }
