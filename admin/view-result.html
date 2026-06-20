@@ -267,7 +267,7 @@
     function buildGradesheet(symbol, studentName, subjectRows, gpa, grade, sheetName, cls) {
       var isNg = grade === 'NG';
       var h = [];
-      h.push('<div class="gs" style="width:100%;height:100%;margin:0;background:#fff;position:relative;display:flex;flex-direction:column;">');
+      h.push('<div class="gs" style="width:100%;min-height:500px;background:#fff;position:relative;display:flex;flex-direction:column;padding:4mm 4mm 6mm;box-sizing:border-box;">');
 
       h.push('<div style="display:flex;align-items:center;gap:18px;padding:22px 32px 12px;border-bottom:1px solid #d0d7de;">');
       h.push('<img src="../assets/images/logo.png" alt="" style="width:50px;height:50px;object-fit:contain;padding:3px;">');
