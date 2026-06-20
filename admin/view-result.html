@@ -30,6 +30,34 @@
     .gs table tbody tr:last-child td { border-bottom:1px solid #bac0c8; }
     .sig-line { width:160px; border-top:2px solid #1a3c6d; margin:0 auto 8px; }
     .no-print { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:16px; }
+
+    .edit-toolbar { display:flex; align-items:center; gap:4px; padding:6px 12px; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.12); flex-wrap:wrap; }
+    .edit-tb-group { display:flex; gap:2px; }
+    .edit-tb-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid transparent; border-radius:6px; background:transparent; cursor:pointer; font-size:14px; color:#1f2328; }
+    .edit-tb-btn:hover { background:#f3f4f6; border-color:#d0d7de; }
+    .edit-tb-btn:active { background:#e8eaed; }
+    .edit-tb-divider { width:1px; height:24px; background:#d0d7de; margin:0 4px; }
+    .edit-tb-done { background:#1a3c6d !important; color:#fff !important; padding:0 14px !important; width:auto !important; border-radius:6px !important; font-size:13px !important; font-weight:600; }
+    .edit-tb-done:hover { background:#1e4a8a !important; }
+
+    .editable-shape { position:absolute; cursor:move; z-index:10; }
+    .editable-shape.shape-selected { outline:2px solid #2563eb; outline-offset:1px; }
+    .shape-handle { position:absolute; width:10px; height:10px; background:#fff; border:2px solid #2563eb; border-radius:2px; z-index:11; }
+    .shape-handle.nw { top:-6px; left:-6px; cursor:nw-resize; }
+    .shape-handle.n { top:-6px; left:50%; margin-left:-5px; cursor:n-resize; }
+    .shape-handle.ne { top:-6px; right:-6px; cursor:ne-resize; }
+    .shape-handle.e { top:50%; right:-6px; margin-top:-5px; cursor:e-resize; }
+    .shape-handle.se { bottom:-6px; right:-6px; cursor:se-resize; }
+    .shape-handle.s { bottom:-6px; left:50%; margin-left:-5px; cursor:s-resize; }
+    .shape-handle.sw { bottom:-6px; left:-6px; cursor:sw-resize; }
+    .shape-handle.w { top:50%; left:-6px; margin-top:-5px; cursor:w-resize; }
+
+    .edit-mode .gs * { cursor:text; }
+    .edit-mode .gs table td, .edit-mode .gs table th { cursor:text; }
+    .edit-mode .editable-shape { cursor:move !important; }
+    .edit-mode .editable-shape * { cursor:move !important; }
+    .edit-mode .editable-shape .shape-handle { cursor:inherit !important; }
+
     @media print {
       body { background:#fff !important; margin:0 !important; padding:0 !important; }
       body.admin-body { display:block !important; }
@@ -282,10 +310,21 @@
       h.push('</div>');
 
       h.push('<div class="no-print">');
+      h.push('<button class="btn btn-secondary btn-sm" onclick="toggleEditMode()"><i class="fas fa-edit"></i> Edit</button>');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> PNG</button>');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>');
       h.push('<button class="btn btn-primary btn-sm" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>');
       h.push('</div>');
+      h.push('<div id="editToolbar" class="no-print" style="display:none;justify-content:center;margin-top:8px;">');
+      h.push('<div class="edit-toolbar">');
+      h.push('<div class="edit-tb-group"><button class="edit-tb-btn" onclick="execCmd(\'bold\')" title="Bold"><b>B</b></button><button class="edit-tb-btn" onclick="execCmd(\'italic\')" title="Italic"><i>I</i></button><button class="edit-tb-btn" onclick="execCmd(\'underline\')" title="Underline"><u>U</u></button></div>');
+      h.push('<div class="edit-tb-divider"></div>');
+      h.push('<div class="edit-tb-group"><button class="edit-tb-btn" onclick="addShape(\'rect\')" title="Rectangle">▬</button><button class="edit-tb-btn" onclick="addShape(\'circle\')" title="Circle">●</button><button class="edit-tb-btn" onclick="addShape(\'line\')" title="Line">╱</button><button class="edit-tb-btn" onclick="addShape(\'text\')" title="Text Box">T</button></div>');
+      h.push('<div class="edit-tb-divider"></div>');
+      h.push('<div class="edit-tb-group"><button class="edit-tb-btn" onclick="deleteShape()" title="Delete" style="color:#cf222e;">✕</button></div>');
+      h.push('<div class="edit-tb-divider"></div>');
+      h.push('<div class="edit-tb-group"><button class="edit-tb-btn edit-tb-done" onclick="toggleEditMode()">Done</button></div>');
+      h.push('</div></div>');
 
       return h.join('');
     }
@@ -414,7 +453,186 @@
       removeWatermark(card);
     }
 
+    /* ── Editor System ── */
+    var _editMode = false, _selectedShape = null, _dragData = null;
+
+    function toggleEditMode() {
+      _editMode = !_editMode;
+      var gs = document.querySelector('#resultDisplay .gs');
+      var tb = document.getElementById('editToolbar');
+      if (!gs) return;
+      if (_editMode) {
+        gs.contentEditable = 'true';
+        tb.style.display = 'flex';
+        document.getElementById('resultDisplay').classList.add('edit-mode');
+        makeShapesInteractive();
+      } else {
+        gs.contentEditable = 'false';
+        tb.style.display = 'none';
+        document.getElementById('resultDisplay').classList.remove('edit-mode');
+        deselectShape();
+        _dragData = null;
+        document.removeEventListener('mousemove', onDragMove);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('keydown', onEditKeydown);
+      }
+    }
+
+    function execCmd(cmd) {
+      document.execCommand(cmd, false, null);
+      var gs = document.querySelector('#resultDisplay .gs');
+      if (gs) gs.focus();
+    }
+
+    function selectShape(el) {
+      deselectShape();
+      _selectedShape = el;
+      if (el) el.classList.add('shape-selected');
+    }
+
+    function deselectShape() {
+      if (_selectedShape) { _selectedShape.classList.remove('shape-selected'); _selectedShape = null; }
+    }
+
+    function addShape(type) {
+      var gs = document.querySelector('#resultDisplay .gs');
+      if (!gs) return;
+      var el = document.createElement('div');
+      el.className = 'editable-shape';
+      el.style.cssText = 'position:absolute;z-index:10;';
+      var w = 100, h = 60, st = '';
+
+      if (type === 'rect') {
+        st = 'border:2px solid #1a3c6d;background:rgba(26,60,109,0.08);border-radius:2px;width:'+w+'px;height:'+h+'px;top:120px;left:60px;';
+      } else if (type === 'circle') {
+        st = 'border:2px solid #1a3c6d;background:rgba(26,60,109,0.08);width:80px;height:80px;border-radius:50%;top:120px;left:60px;';
+      } else if (type === 'line') {
+        st = 'border-top:2px solid #1a3c6d;width:140px;height:0;top:140px;left:60px;';
+      } else if (type === 'text') {
+        st = 'min-width:80px;min-height:28px;top:120px;left:60px;font-size:14px;color:#1f2328;padding:4px;background:transparent;';
+        el.contentEditable = 'true';
+        el.textContent = 'Text';
+      }
+      el.style.cssText += st;
+
+      ['nw','n','ne','e','se','s','sw','w'].forEach(function(d) {
+        var h = document.createElement('div');
+        h.className = 'shape-handle ' + d;
+        el.appendChild(h);
+      });
+
+      el.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('shape-handle')) return;
+        e.preventDefault();
+        selectShape(el);
+        startDrag(el, e);
+      });
+
+      el.querySelectorAll('.shape-handle').forEach(function(h) {
+        var dir = Array.from(h.classList).filter(function(c){ return /^[nsew]+$/.test(c); })[0];
+        if (!dir) return;
+        h.addEventListener('mousedown', function(e) {
+          e.stopPropagation(); e.preventDefault();
+          selectShape(el);
+          startResize(el, dir, e);
+        });
+      });
+
+      gs.appendChild(el);
+      selectShape(el);
+    }
+
+    function deleteShape() {
+      if (!_selectedShape) { showToast('Select a shape first.', 'info'); return; }
+      _selectedShape.parentNode.removeChild(_selectedShape);
+      _selectedShape = null;
+    }
+
+    function startDrag(el, e) {
+      _dragData = { el: el, type: 'move', sx: e.clientX, sy: e.clientY, l: px(el.style.left), t: px(el.style.top) };
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+    }
+
+    function onDragMove(e) {
+      if (!_dragData) return;
+      var d = _dragData, dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+      if (d.type === 'move') {
+        d.el.style.left = (d.l + dx) + 'px';
+        d.el.style.top = (d.t + dy) + 'px';
+      } else if (d.type === 'resize') {
+        if (d.dir.indexOf('e') >= 0) d.el.style.width = Math.max(20, d.w + dx) + 'px';
+        if (d.dir.indexOf('w') >= 0) { d.el.style.width = Math.max(20, d.w - dx) + 'px'; d.el.style.left = (d.l + dx) + 'px'; }
+        if (d.dir.indexOf('s') >= 0) d.el.style.height = Math.max(20, d.h + dy) + 'px';
+        if (d.dir.indexOf('n') >= 0) { d.el.style.height = Math.max(20, d.h - dy) + 'px'; d.el.style.top = (d.t + dy) + 'px'; }
+        if (d.dir === 'line') d.el.style.width = Math.max(20, d.w + dx) + 'px';
+      }
+    }
+
+    function onDragEnd() {
+      if (_dragData && _dragData.type === 'resize' && _dragData.el) {
+        _dragData.el.style.cursor = '';
+        _dragData.el.querySelectorAll('.shape-handle').forEach(function(h){ h.style.display=''; });
+      }
+      _dragData = null;
+      document.removeEventListener('mousemove', onDragMove);
+      document.removeEventListener('mouseup', onDragEnd);
+    }
+
+    function px(v) { return parseInt(v) || 0; }
+
+    function makeShapesInteractive() {
+      document.querySelectorAll('.editable-shape').forEach(function(el) {
+        el.querySelectorAll('.shape-handle').forEach(function(h) {
+          var dir = Array.from(h.classList).filter(function(c){ return /^[nsew]+$/.test(c); })[0];
+          if (!dir) return;
+          h.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            selectShape(el);
+            startResize(el, dir, e);
+          });
+        });
+      });
+    }
+
+    function startResize(el, dir, e) {
+      var r = el.getBoundingClientRect();
+      var p = el.parentNode.getBoundingClientRect();
+      var l = el.offsetLeft, t2 = el.offsetTop;
+      var w = el.offsetWidth, h2 = el.offsetHeight;
+
+      el.style.cursor = dir + '-resize';
+      el.querySelectorAll('.shape-handle').forEach(function(h){ h.style.display='none'; });
+
+      _dragData = {
+        el: el, type: 'resize', dir: dir,
+        sx: e.clientX, sy: e.clientY,
+        l: l, t: t2, w: w, h: h2,
+        rb: l + w, bb: t2 + h2
+      };
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+    }
+
+    function onKeydown(e) {
+      if (!_editMode) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        var sel = document.activeElement;
+        if (sel && sel.classList && sel.classList.contains('editable-shape')) {
+          e.preventDefault();
+          deleteShape();
+          return;
+        }
+        if (_selectedShape && !sel.closest) {
+          e.preventDefault();
+          deleteShape();
+        }
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function () { loadPublishedSheets(); });
+    document.addEventListener('keydown', onKeydown);
   </script>
 </body>
 </html>
