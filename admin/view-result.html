@@ -251,12 +251,12 @@
 
     function printGradesheet() {
       if (!document.querySelector('#resultDisplay .gs')) return;
-      doPrint(null);
+      doPrint();
     }
 
     function downloadResult(format) {
       if (!document.querySelector('#resultDisplay .gs')) return;
-      doDownload(format, null);
+      doDownload(format);
     }
 
     function gradeColor(g) {
@@ -424,18 +424,16 @@
       if (wm) wm.remove();
     }
 
-    function doPrint(cls) {
-      var d = _resultData;
-      document.getElementById('resultDisplay').innerHTML = buildGradesheet(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+    function doPrint() {
       var card = document.querySelector('#resultDisplay .gs');
+      if (!card) return;
       addWatermark(card);
-      setTimeout(function(){ window.print(); setTimeout(function(){ removeWatermark(card); }, 300); }, 200);
+      setTimeout(function(){ window.print(); setTimeout(function(){ removeWatermark(card); }, 300); }, 100);
     }
 
-    async function doDownload(format, cls) {
-      var d = _resultData;
-      document.getElementById('resultDisplay').innerHTML = buildGradesheet(d.symbol, d.studentName, d.subjectRows, d.gpa, d.grade, _sheetName, cls);
+    async function doDownload(format) {
       var card = document.querySelector('#resultDisplay .gs');
+      if (!card) return;
       addWatermark(card);
       try {
         var canvas = await html2canvas(card, { scale: 3, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false });
@@ -443,10 +441,11 @@
           var link = document.createElement('a'); link.download = 'gradesheet.png'; link.href = canvas.toDataURL('image/png'); link.click();
         } else {
           var imgData = canvas.toDataURL('image/png');
-          var pdf = new window.jspdf.jsPDF({ orientation: canvas.width > canvas.height ? 'l' : 'p', unit: 'mm', format: 'a4' });
+          var pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
           var pw = pdf.internal.pageSize.getWidth();
           var ph = (canvas.height * pw) / canvas.width;
-          pdf.addImage(imgData, 'PNG', 0, 0, pw, ph);
+          if (ph > 297) ph = 297;
+          pdf.addImage(imgData, 'PNG', 0, 0, pw, Math.min(ph, 297));
           pdf.save('gradesheet.pdf');
         }
       } catch (e) { showToast('Download failed: ' + e.message, 'error'); }
