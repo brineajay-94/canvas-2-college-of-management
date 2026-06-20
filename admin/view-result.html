@@ -45,10 +45,12 @@
       #resultDisplay .gs {
         width:100% !important; max-width:none !important; margin:0 !important;
         min-height:100vh !important; box-sizing:border-box !important;
+        display:flex !important; flex-direction:column !important;
         border:none !important; border-radius:0 !important; box-shadow:none !important;
         page-break-inside:avoid !important;
         -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
+      #resultDisplay .gs-content { flex:1 !important; }
       .watermark-logo { display:block !important; }
       @page { size:A4; margin:0; }
     }
@@ -263,6 +265,8 @@
       h.push('<div><span style="font-weight:600;color:#1a3c6d;">Student Name:</span> ' + (studentName||'—') + '</div>');
       h.push('</div>');
 
+      h.push('<div class="gs-content">');
+
       if (subjectRows.length) {
         h.push('<table><thead><tr><th>Subject</th><th style="width:80px;">Grade</th><th style="width:100px;">Grade Point</th></tr></thead><tbody>');
         subjectRows.forEach(function(row){
@@ -275,6 +279,8 @@
       h.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 28px;border-top:2px solid #1a3c6d;border-bottom:1px solid #d0d7de;">');
       h.push('<div><div style="font-size:11px;text-transform:uppercase;color:#656d76;letter-spacing:1.2px;">GPA</div><div style="font-size:22px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';line-height:1.2;">' + (gpa || '—') + '</div></div>');
       h.push('<div style="text-align:right;"><div style="font-size:11px;text-transform:uppercase;color:#656d76;letter-spacing:1.2px;">Overall Grade</div><div style="font-size:22px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';">' + (grade || '—') + '</div></div>');
+      h.push('</div>');
+
       h.push('</div>');
 
       h.push('<div style="display:flex;justify-content:space-around;padding:18px 40px 22px;">');
