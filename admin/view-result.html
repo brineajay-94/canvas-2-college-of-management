@@ -58,20 +58,6 @@
     .edit-mode .editable-shape * { cursor:move !important; }
     .edit-mode .editable-shape .shape-handle { cursor:inherit !important; }
 
-    .edit-fullscreen .sidebar,
-    .edit-fullscreen .admin-header,
-    .edit-fullscreen .mobile-toggle,
-    .edit-fullscreen .page-content > .panel:first-child { display:none !important; }
-    .edit-fullscreen .main-content { margin:0; padding:0; height:100vh; display:flex; flex-direction:column; }
-    .edit-fullscreen .page-content { flex:1; display:flex; flex-direction:column; padding:0; max-width:100%; margin:0; }
-    .edit-fullscreen #resultDisplay { flex:1; display:flex; flex-direction:column; margin:0; padding:0; }
-    .edit-fullscreen #resultDisplay .gs { flex:1; display:flex; flex-direction:column; min-height:0; padding:0 !important; }
-
-    .view-tabs { display:flex; gap:0; margin-bottom:0; border-bottom:2px solid #d0d7de; }
-    .view-tab { padding:8px 20px; font-size:13px; font-weight:600; color:#656d76; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
-    .view-tab:hover { color:#1f2328; }
-    .view-tab.active { color:#1a3c6d; border-bottom-color:#1a3c6d; }
-
     .save-dialog-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; z-index:500; }
     .save-dialog { background:#fff; border-radius:12px; padding:24px; width:360px; max-width:90vw; box-shadow:0 16px 48px rgba(0,0,0,0.2); }
     .save-dialog h3 { margin:0 0 16px; font-size:16px; color:#1f2328; }
@@ -494,13 +480,11 @@
       var tb = document.getElementById('editToolbar');
       if (!gs) return;
       if (_editMode) {
-        document.body.classList.add('edit-fullscreen');
         gs.contentEditable = 'true';
         tb.style.display = 'flex';
         document.getElementById('resultDisplay').classList.add('edit-mode');
         makeShapesInteractive();
       } else {
-        document.body.classList.remove('edit-fullscreen');
         gs.contentEditable = 'false';
         tb.style.display = 'none';
         document.getElementById('resultDisplay').classList.remove('edit-mode');
