@@ -37,11 +37,15 @@
       .sidebar-overlay, #toastContainer, .mobile-toggle, .modal-overlay, .no-print { display:none !important; }
       .main-content { margin-left:0 !important; padding:0 !important; width:100% !important; }
       .page-content { padding:0 !important; max-width:100% !important; }
-      #resultDisplay { display:flex !important; align-items:center !important; justify-content:center !important; min-height:100vh !important; margin:0 !important; padding:8mm !important; box-sizing:border-box !important; }
-      #resultDisplay .gs {
-        width:100% !important; max-width:780px !important; margin:0 auto !important;
+      #resultDisplay {
+        display:block !important; margin:0 !important; padding:0 !important;
         box-shadow:0 0 0 3px #1a3c6d, 0 0 0 6px #b0b8c4 !important;
-        border:none !important; border-radius:0 !important;
+        -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      }
+      #resultDisplay .gs {
+        width:100% !important; max-width:none !important; margin:0 !important;
+        min-height:100vh !important; box-sizing:border-box !important;
+        border:none !important; border-radius:0 !important; box-shadow:none !important;
         page-break-inside:avoid !important;
         -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
@@ -278,7 +282,7 @@
       h.push('<div style="text-align:center;"><div class="sig-line"></div><div style="font-size:12px;color:#656d76;">Principal</div></div>');
       h.push('</div>');
 
-      h.push('<div style="text-align:center;padding:7px 20px;border-top:1px solid #d0d7de;font-size:10px;color:#8c959f;">Computer-generated document &bull; Canvas+2 College of Management, Triyuga-11, Gaighat, Udayapur, Nepal</div>');
+
       h.push('</div>');
 
       h.push('<div class="no-print">');
