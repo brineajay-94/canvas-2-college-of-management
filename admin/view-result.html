@@ -58,6 +58,37 @@
     .edit-mode .editable-shape * { cursor:move !important; }
     .edit-mode .editable-shape .shape-handle { cursor:inherit !important; }
 
+    .edit-fullscreen .sidebar,
+    .edit-fullscreen .admin-header,
+    .edit-fullscreen .mobile-toggle,
+    .edit-fullscreen .page-content > .panel:first-child { display:none !important; }
+    .edit-fullscreen .main-content { margin:0; padding:0; height:100vh; display:flex; flex-direction:column; }
+    .edit-fullscreen .page-content { flex:1; display:flex; flex-direction:column; padding:0; max-width:100%; margin:0; }
+    .edit-fullscreen #resultDisplay { flex:1; display:flex; flex-direction:column; margin:0; padding:0; }
+    .edit-fullscreen #resultDisplay .gs { flex:1; display:flex; flex-direction:column; }
+
+    .view-tabs { display:flex; gap:0; margin-bottom:0; border-bottom:2px solid #d0d7de; }
+    .view-tab { padding:8px 20px; font-size:13px; font-weight:600; color:#656d76; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
+    .view-tab:hover { color:#1f2328; }
+    .view-tab.active { color:#1a3c6d; border-bottom-color:#1a3c6d; }
+
+    .saved-header { display:flex; justify-content:space-between; align-items:center; padding:12px 0; }
+    .saved-list { display:flex; flex-direction:column; gap:8px; }
+    .saved-item { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#fff; border:1px solid #d0d7de; border-radius:8px; }
+    .saved-item:hover { border-color:#1a3c6d; }
+    .saved-item-info { flex:1; }
+    .saved-item-name { font-size:14px; font-weight:600; color:#1f2328; }
+    .saved-item-date { font-size:12px; color:#656d76; margin-top:2px; }
+    .saved-item-actions { display:flex; gap:6px; }
+    .saved-empty { text-align:center; padding:40px 20px; color:#656d76; font-size:14px; }
+
+    .save-dialog-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:100; }
+    .save-dialog { background:#fff; border-radius:12px; padding:24px; width:360px; max-width:90vw; box-shadow:0 16px 48px rgba(0,0,0,0.2); }
+    .save-dialog h3 { margin:0 0 16px; font-size:16px; color:#1f2328; }
+    .save-dialog input { width:100%; padding:10px 12px; border:1px solid #d0d7de; border-radius:6px; font-size:14px; box-sizing:border-box; }
+    .save-dialog input:focus { outline:none; border-color:#1a3c6d; }
+    .save-dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+
     @media print {
       body { background:#fff !important; margin:0 !important; padding:0 !important; }
       body.admin-body { display:block !important; }
@@ -116,6 +147,11 @@
     </header>
 
     <div class="page-content">
+      <div class="view-tabs">
+        <div class="view-tab active" onclick="showView('search')"><i class="fas fa-search"></i> Search</div>
+        <div class="view-tab" onclick="showView('saved')"><i class="fas fa-save"></i> Saved</div>
+      </div>
+      <div id="searchView">
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title"><i class="fas fa-search"></i> Search Student Result</span>
@@ -141,6 +177,30 @@
       </div>
 
       <div id="resultDisplay"></div>
+      </div>
+
+      <div id="savedView" style="display:none;">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><i class="fas fa-save"></i> Saved Gradesheets</span>
+          </div>
+          <div class="panel-body">
+            <div class="saved-empty" id="savedEmpty">No saved gradesheets yet.</div>
+            <div class="saved-list" id="savedList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-dialog-overlay" id="saveDialog">
+    <div class="save-dialog">
+      <h3>Save Gradesheet</h3>
+      <input type="text" id="saveNameInput" placeholder="Enter gradesheet name..." autocomplete="off">
+      <div class="save-dialog-actions">
+        <button class="btn btn-secondary" onclick="closeSaveDialog()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmSave()">Save</button>
+      </div>
     </div>
   </div>
 
@@ -311,6 +371,7 @@
 
       h.push('<div class="no-print">');
       h.push('<button class="btn btn-secondary btn-sm" onclick="toggleEditMode()"><i class="fas fa-edit"></i> Edit</button>');
+      h.push('<button class="btn btn-secondary btn-sm" onclick="showSaveDialog()"><i class="fas fa-save"></i> Save As</button>');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'png\')"><i class="fas fa-image"></i> PNG</button>');
       h.push('<button class="btn btn-secondary btn-sm" onclick="downloadResult(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>');
       h.push('<button class="btn btn-primary btn-sm" onclick="printGradesheet()"><i class="fas fa-print"></i> Print</button>');
@@ -461,11 +522,13 @@
       var tb = document.getElementById('editToolbar');
       if (!gs) return;
       if (_editMode) {
+        document.body.classList.add('edit-fullscreen');
         gs.contentEditable = 'true';
         tb.style.display = 'flex';
         document.getElementById('resultDisplay').classList.add('edit-mode');
         makeShapesInteractive();
       } else {
+        document.body.classList.remove('edit-fullscreen');
         gs.contentEditable = 'false';
         tb.style.display = 'none';
         document.getElementById('resultDisplay').classList.remove('edit-mode');
@@ -629,6 +692,93 @@
         }
       }
     }
+
+    /* ── View / Save System ── */
+    function showView(view) {
+      document.querySelectorAll('.view-tab').forEach(function(t){ t.classList.remove('active'); });
+      var tab = document.querySelector('.view-tab[onclick*="'+view+'"]');
+      if (tab) tab.classList.add('active');
+      document.getElementById('searchView').style.display = view === 'search' ? '' : 'none';
+      document.getElementById('savedView').style.display = view === 'saved' ? '' : 'none';
+      if (view === 'saved') loadSavedList();
+    }
+
+    function showSaveDialog() {
+      if (!document.querySelector('#resultDisplay .gs')) { showToast('Search a result first.', 'info'); return; }
+      document.getElementById('saveDialog').style.display = 'flex';
+      document.getElementById('saveNameInput').value = '';
+      document.getElementById('saveNameInput').focus();
+    }
+
+    function closeSaveDialog() {
+      document.getElementById('saveDialog').style.display = 'none';
+    }
+
+    function confirmSave() {
+      var name = document.getElementById('saveNameInput').value.trim();
+      if (!name) { showToast('Enter a name.', 'info'); return; }
+      var gs = document.querySelector('#resultDisplay .gs');
+      if (!gs) { showToast('No gradesheet to save.', 'error'); return; }
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      saved = saved.filter(function(s){ return s.name !== name; });
+      saved.push({ name: name, html: gs.outerHTML, date: new Date().toISOString() });
+      localStorage.setItem('savedGradesheets', JSON.stringify(saved));
+      closeSaveDialog();
+      showToast('Gradesheet "' + name + '" saved!', 'success');
+    }
+
+    function loadSavedList() {
+      var list = document.getElementById('savedList');
+      var empty = document.getElementById('savedEmpty');
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      if (!saved.length) { list.innerHTML = ''; empty.style.display = ''; return; }
+      empty.style.display = 'none';
+      list.innerHTML = saved.slice().reverse().map(function(s){
+        var d = new Date(s.date);
+        var dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        return '<div class="saved-item">' +
+          '<div class="saved-item-info"><div class="saved-item-name">' + escHtml(s.name) + '</div><div class="saved-item-date">' + dateStr + '</div></div>' +
+          '<div class="saved-item-actions">' +
+          '<button class="btn btn-secondary btn-sm" onclick="editSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+          '<button class="btn btn-primary btn-sm" onclick="printSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-print"></i> Print</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteSaved(\'' + escHtml(s.name) + '\')"><i class="fas fa-trash"></i></button>' +
+          '</div></div>';
+      }).join('');
+    }
+
+    function editSaved(name) {
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var item = saved.find(function(s){ return s.name === name; });
+      if (!item) { showToast('Not found.', 'error'); return; }
+      showView('search');
+      document.getElementById('resultDisplay').innerHTML = item.html;
+      document.getElementById('searchStatus').innerHTML = '<span style="color:var(--color-success-emphasis);"><i class="fas fa-check-circle"></i> Loaded: ' + escHtml(name) + '</span>';
+      setTimeout(function(){ toggleEditMode(); }, 200);
+    }
+
+    function printSaved(name) {
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      var item = saved.find(function(s){ return s.name === name; });
+      if (!item) { showToast('Not found.', 'error'); return; }
+      showView('search');
+      document.getElementById('resultDisplay').innerHTML = item.html;
+      setTimeout(function(){ doPrint(); }, 200);
+    }
+
+    function deleteSaved(name) {
+      if (!confirm('Delete "' + name + '"?')) return;
+      var saved = JSON.parse(localStorage.getItem('savedGradesheets') || '[]');
+      saved = saved.filter(function(s){ return s.name !== name; });
+      localStorage.setItem('savedGradesheets', JSON.stringify(saved));
+      loadSavedList();
+      showToast('Deleted.', 'info');
+    }
+
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    document.getElementById('saveNameInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') confirmSave();
+    });
 
     document.addEventListener('DOMContentLoaded', function () { loadPublishedSheets(); });
     document.addEventListener('keydown', onKeydown);
