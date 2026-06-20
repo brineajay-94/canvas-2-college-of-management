@@ -36,10 +36,12 @@
       .sidebar, .admin-header, .page-content > .panel:first-child, .toast-container,
       .sidebar-overlay, #toastContainer, .mobile-toggle, .modal-overlay, .no-print { display:none !important; }
       .main-content {
-        margin-left:0 !important; padding:0 !important; width:100% !important;
+        margin:10mm !important; padding:8mm !important;
+        width:auto !important;
         border:6px solid #1a3c6d !important;
         outline:2px solid #b0b8c4 !important;
         outline-offset:-8px !important;
+        box-sizing:border-box !important;
         -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       }
       .page-content { padding:0 !important; max-width:100% !important; }
@@ -271,7 +273,7 @@
       h.push('<div style="text-align:right;"><div style="font-size:10px;text-transform:uppercase;color:#656d76;letter-spacing:1px;">Overall Grade</div><div style="font-size:16px;font-weight:800;color:' + (isNg ? '#cf222e' : '#1a3c6d') + ';">' + (grade || '—') + '</div></div>');
       h.push('</div>');
 
-      h.push('<div style="display:flex;justify-content:space-around;padding:12px 40px 4px;">');
+      h.push('<div style="display:flex;justify-content:space-around;padding:12px 40px 30mm;">');
       h.push('<div style="text-align:center;"><div class="sig-line"></div><div style="font-size:11px;color:#656d76;">Exam Controller</div></div>');
       h.push('<div style="text-align:center;"><div class="sig-line"></div><div style="font-size:11px;color:#656d76;">Principal</div></div>');
       h.push('</div>');
