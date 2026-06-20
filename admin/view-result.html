@@ -235,10 +235,11 @@
 
     function proceedWithClass() {
       var cls = getSelectedClass();
+      var action = _pendingAction;
       closeClassModal();
-      if (_pendingAction === 'print') doPrint(cls);
-      else if (_pendingAction === 'png') doDownload('png', cls);
-      else if (_pendingAction === 'pdf') doDownload('pdf', cls);
+      if (action === 'print') doPrint(cls);
+      else if (action === 'png') doDownload('png', cls);
+      else if (action === 'pdf') doDownload('pdf', cls);
     }
 
     function printGradesheet() {
@@ -282,17 +283,15 @@
       if (subjectRows.length) {
         h.push('<div class="gs-table-wrap">');
         h.push('<table class="gs-table"><thead><tr>');
-        h.push('<th style="width:60%;">Subject</th><th>Grade</th><th>Grade Point</th><th>Remarks</th>');
+        h.push('<th>Subject</th><th style="width:90px;">Grade</th><th style="width:110px;">Grade Point</th>');
         h.push('</tr></thead><tbody>');
         subjectRows.forEach(function(row){
           var gp = row.grade === 'A+' ? 4.0 : row.grade === 'A' ? 3.6 : row.grade === 'B+' ? 3.2 : row.grade === 'C+' ? 2.8 : row.grade === 'C' ? 2.4 : row.grade === 'D+' ? 2.0 : row.grade === 'D' ? 1.6 : 0.0;
-          var remark = row.grade === 'NG' ? 'Fail' : 'Pass';
           var gC = gradeColor(row.grade);
           h.push('<tr>');
           h.push('<td>' + row.label + '</td>');
           h.push('<td style="font-weight:700;color:' + gC + ';">' + row.grade + '</td>');
           h.push('<td style="font-weight:600;">' + (row.grade === 'NG' ? '0.0' : gp.toFixed(1)) + '</td>');
-          h.push('<td style="font-size:13px;color:' + (remark === 'Pass' ? '#1a7f37' : '#cf222e') + ';font-weight:600;">' + remark + '</td>');
           h.push('</tr>');
         });
         h.push('</tbody></table></div>');
